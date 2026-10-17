@@ -12,7 +12,7 @@ pinned: false
 
 Ein eigenständiges, deutschsprachiges Kreativstudio mit einem von Hugging Face inspirierten Modellkatalog. Die App heißt Helix. Video und Voice werden tatsächlich über öffentliche Hugging-Face-Spaces generiert. Kein Nachbau der gesamten Hugging-Face-Plattform, keine simulierten Ergebnisse.
 
-**Android-APK herunterladen:** [Helix.apk](https://raw.githubusercontent.com/smokemoney81/Helix/main/Helix.apk). Die Datei wurde durch den [GitHub-Actions-Build](https://github.com/smokemoney81/Helix/actions/workflows/android-apk.yml) erstellt und als Android-Debug-Version signiert. Auf einem echten Smartphone benötigt sie beim ersten Start die HTTPS-Adresse eines laufenden Helix-Servers.
+**Android-APK herunterladen:** [Helix.apk](https://raw.githubusercontent.com/smokemoney81/Helix/main/Helix.apk). Die Datei wurde durch den [GitHub-Actions-Build](https://github.com/smokemoney81/Helix/actions/workflows/android-apk.yml) erstellt und als Android-Debug-Version signiert. Auf einem echten Smartphone öffnet sie automatisch den Helix-Space, sobald dessen Server läuft.
 
 ## Starten
 
@@ -81,9 +81,9 @@ Das Repository enthält ein Dockerfile und passende Space-Metadaten. So bekommt 
 1. Erstelle unter [Hugging Face Spaces](https://huggingface.co/new-space) einen **öffentlichen Docker-Space** namens `Helix` im Konto `smokemoney81`, mit kostenloser CPU Basic Hardware.
 2. Erstelle unter [Access Tokens](https://huggingface.co/settings/tokens) einen Token mit Schreibzugriff auf diesen Space. Speichere ihn unter [GitHub Actions Secrets](https://github.com/smokemoney81/Helix/settings/secrets/actions) als `HF_DEPLOY_TOKEN`. Den Token nie in Quellcode oder Chat-Nachrichten einfügen.
 3. Starte unter [Actions → Deploy Helix Server](https://github.com/smokemoney81/Helix/actions/workflows/deploy-hf-space.yml) den Workflow **Run workflow**. Er überträgt nur `README.md`, `Dockerfile`, `requirements.txt`, `app.py` und `static/` in den Space.
-4. Sobald der Space läuft, prüfe seine URL mit `/api/health` und trage diese HTTPS-Adresse in der Android-App unter **Server** ein.
+4. Sobald der Space läuft, prüfe `https://smokemoney81-helix.hf.space/api/health`. Die Android-App verwendet diese Adresse automatisch.
 
-Das Studio selbst benötigt keine GPU; die ausgewählten öffentlichen Spaces führen die Generierung aus. Ein separater `HF_TOKEN` als **Space-Secret** ist für diese öffentlichen Modelle optional und wird nicht mit dem Deploy-Token verwechselt. Kostenlose Spaces können schlafen; ohne dauerhaftes Volume können bei Neustarts gespeicherte Ergebnisse verloren gehen. Der Space wurde noch nicht angelegt oder deployed.
+Das Studio selbst benötigt keine GPU; die ausgewählten öffentlichen Spaces führen die Generierung aus. Ein separater `HF_TOKEN` als **Space-Secret** ist für diese öffentlichen Modelle optional und wird nicht mit dem Deploy-Token verwechselt. Kostenlose Spaces können schlafen; ohne dauerhaftes Volume können bei Neustarts gespeicherte Ergebnisse verloren gehen.
 
 ## Prüfen
 
