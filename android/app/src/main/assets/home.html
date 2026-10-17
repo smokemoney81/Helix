@@ -56,5 +56,29 @@
     if(new URLSearchParams(location.search).has('offline'))document.getElementById('offline').classList.add('visible');
     render();
   </script>
+<section id="offline-voice-panel" style="display:none;margin:18px 0;padding:18px;border:1px solid rgba(185,241,132,.3);border-radius:18px;background:#10192b">
+  <div style="color:#b9f184;font-weight:700;margin-bottom:8px">Offline Voice</div>
+  <div style="color:#b7c4d8;font-size:13px;margin-bottom:10px">Lokale Android-Stimme · kein Cloning · kein Server</div>
+  <textarea id="offline-voice-text" rows="4" maxlength="3000" placeholder="Text für die lokale Sprachausgabe..." style="width:100%;box-sizing:border-box;border-radius:12px;padding:12px;background:#0b1020;color:#fff;border:1px solid #33445e"></textarea>
+  <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap">
+    <label style="color:#b7c4d8;font-size:12px">Tempo <input id="offline-speed" type="range" min=".5" max="2" step=".1" value="1"></label>
+    <label style="color:#b7c4d8;font-size:12px">Tonhöhe <input id="offline-pitch" type="range" min=".5" max="2" step=".1" value="1"></label>
+    <button id="offline-speak" type="button">▶ Sprechen</button>
+    <button id="offline-stop" type="button">■ Stop</button>
+  </div>
+</section>
+<script>
+(function(){
+  const native=window.HelixNative;
+  const panel=document.getElementById('offline-voice-panel');
+  if(!native||!panel)return;
+  panel.style.display='block';
+  document.getElementById('offline-speak').onclick=function(){
+    const text=document.getElementById('offline-voice-text').value.trim();
+    if(text)native.speak(text,'de-DE',parseFloat(document.getElementById('offline-speed').value),parseFloat(document.getElementById('offline-pitch').value));
+  };
+  document.getElementById('offline-stop').onclick=function(){native.stopSpeaking();};
+})();
+</script>
 </body>
 </html>
