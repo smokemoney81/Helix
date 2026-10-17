@@ -1,0 +1,11 @@
+.env
+.venv/
+data/
+__pycache__/
+*.pyc
+test-results/
+.tools/
+android-sdk/
+android/.gradle/
+android/app/build/
+android/local.properties
