@@ -33,7 +33,7 @@ python -m uvicorn app:app --host 0.0.0.0 --port 3000
 
 Der Workflow `.github/workflows/android-apk.yml` baut bei Änderungen am Android-Projekt auf `main` eine installierbare APK. Unter **Actions → Build Helix APK** findest du das Artefakt **helix-debug-apk**; dort kann der Build auch manuell gestartet werden. Der Download enthält `app-debug.apk` und ist eine von Androids Debug-Schlüssel signierte Testversion.
 
-Beim ersten Start auf einem echten Smartphone fragt Helix nach der HTTPS-Adresse dieses laufenden Servers. Die APK enthält den Python-Server nicht selbst. Im Emulator wird `http://10.0.2.2:3000` automatisch verwendet. Weitere Details stehen in [android/README.md](android/README.md).
+Auf einem echten Smartphone öffnet Helix standardmäßig `https://smokemoney81-helix.hf.space`. Die Adresse funktioniert, sobald der unten beschriebene Space deployed ist. Bei einem Verbindungsfehler kann sie unter **Server** geändert oder erneut versucht werden. Die APK enthält den Python-Server nicht selbst. Im Emulator wird `http://10.0.2.2:3000` automatisch verwendet. Weitere Details stehen in [android/README.md](android/README.md).
 
 ## Funktionen
 

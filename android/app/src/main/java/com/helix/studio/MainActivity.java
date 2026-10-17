@@ -15,6 +15,7 @@ import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -28,6 +29,7 @@ public final class MainActivity extends Activity {
     private static final String PREFS = "helix";
     private static final String SERVER_KEY = "server_url";
     private static final String EMULATOR_URL = "http://10.0.2.2:3000";
+    private static final String SPACE_URL = "https://smokemoney81-helix.hf.space";
     private static final int BACKGROUND = Color.rgb(16, 18, 18);
     private static final int MINT = Color.rgb(185, 237, 128);
 
@@ -40,8 +42,8 @@ public final class MainActivity extends Activity {
         getWindow().setStatusBarColor(BACKGROUND);
         getWindow().setNavigationBarColor(BACKGROUND);
         serverUrl = getPreferences(MODE_PRIVATE).getString(SERVER_KEY, null);
-        if (serverUrl == null && isEmulator()) serverUrl = EMULATOR_URL;
-        if (serverUrl == null) showSetup(null); else showStudio();
+        if (serverUrl == null) serverUrl = isEmulator() ? EMULATOR_URL : SPACE_URL;
+        showStudio();
     }
 
     private boolean isEmulator() {
@@ -152,6 +154,11 @@ public final class MainActivity extends Activity {
 
             @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (request.isForMainFrame()) showSetup("Server nicht erreichbar. Prüfe die Adresse und die Verbindung.");
+            }
+
+            @Override public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse response) {
+                if (request.isForMainFrame() && response.getStatusCode() >= 400)
+                    showSetup("Server antwortet nicht. Versuche es in Kürze erneut.");
             }
         });
         web.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
