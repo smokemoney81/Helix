@@ -22,6 +22,7 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -70,10 +71,12 @@ public final class MainActivity extends Activity {
 
     private void showSetup(String message) {
         initRoot();
+        ScrollView scroll = new ScrollView(this);
+        root.addView(scroll, new LinearLayout.LayoutParams(-1, -1));
         LinearLayout panel = new LinearLayout(this);
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setPadding(dp(28), dp(50), dp(28), dp(20));
-        root.addView(panel);
+        scroll.addView(panel);
 
         TextView title = label("Helix ✳", 32, MINT);
         panel.addView(title);
@@ -118,6 +121,28 @@ public final class MainActivity extends Activity {
             serverUrl = value;
             getPreferences(MODE_PRIVATE).edit().putString(SERVER_KEY, value).apply();
             showStudio();
+        });
+
+        TextView models = label("Modelle direkt auf Hugging Face öffnen", 18, Color.WHITE);
+        models.setPadding(0, dp(34), 0, dp(8));
+        panel.addView(models);
+        TextView modelHint = label("Bis dein Helix-Server läuft, kannst du diese öffentlichen Modelle direkt nutzen. Warteschlangen oder eine Anmeldung sind möglich.", 14, Color.rgb(169, 179, 167));
+        panel.addView(modelHint);
+        addModelLink(panel, "Video · LTX-Video", "https://huggingface.co/spaces/Lightricks/ltx-video-distilled");
+        addModelLink(panel, "Stimme · Qwen3-TTS (Deutsch)", "https://huggingface.co/spaces/Qwen/Qwen3-TTS");
+        addModelLink(panel, "Stimme · KittenTTS (Englisch)", "https://huggingface.co/spaces/KittenML/KittenTTS-Demo");
+    }
+
+    private void addModelLink(LinearLayout panel, String title, String url) {
+        Button button = new Button(this);
+        button.setText(title);
+        button.setAllCaps(false);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, dp(52));
+        params.topMargin = dp(10);
+        panel.addView(button, params);
+        button.setOnClickListener(v -> {
+            try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); }
+            catch (Exception ignored) { Toast.makeText(this, "Link konnte nicht geöffnet werden.", Toast.LENGTH_LONG).show(); }
         });
     }
 

@@ -2,7 +2,7 @@
 
 This is the native Android shell for Helix. It opens the web studio and sends generation requests to its FastAPI server.
 
-On a physical device, Helix opens `https://smokemoney81-helix.hf.space` by default once that Space is deployed. If it cannot connect, use the **Server** button to retry or enter another HTTPS address. The APK alone does not run the Python backend. On an Android emulator, Helix opens `http://10.0.2.2:3000` by default, which reaches the host computer's port 3000.
+On a physical device, Helix opens `https://smokemoney81-helix.hf.space` by default once that Space is deployed. If it cannot connect, use the **Server** button to retry or enter another HTTPS address. The setup screen also links directly to the public LTX-Video, Qwen3-TTS, and KittenTTS Spaces while the Helix server is unavailable. The APK alone does not run the Python backend. On an Android emulator, Helix opens `http://10.0.2.2:3000` by default, which reaches the host computer's port 3000.
 
 GitHub Actions builds the APK on pushes to `main` that change `android/`. Open the **Build Helix APK** workflow and download the **helix-debug-apk** artifact. You can also run the workflow manually.
 
