@@ -81,7 +81,7 @@ Optional kann ein Hugging-Face-Token als **Server-Umgebungsvariable** `HF_TOKEN`
 Der kostenlose ZeroGPU-Tarif erlaubt Gradio-Spaces. `space_app.py` bindet die Helix-Oberfläche in einen solchen Space ein und stellt zugleich einen kleinen Gradio-Endpunkt bereit. So bekommt die Android-App eine erreichbare HTTPS-Adresse, ohne einen kostenpflichtigen CPU-Basic-Space einzurichten:
 
 1. Erstelle unter [Hugging Face Spaces](https://huggingface.co/new-space) einen **öffentlichen Gradio-Space** namens `Helix` im Konto `smokemoney81` mit ZeroGPU-Hardware. Bestehende Spaces können verwendet werden.
-2. Erstelle unter [Access Tokens](https://huggingface.co/settings/tokens) einen Token mit Schreibzugriff auf diesen Space. Speichere ihn unter [GitHub Actions Secrets](https://github.com/smokemoney81/Helix/settings/secrets/actions) als `HF_DEPLOY_TOKEN`. Den Token nie in Quellcode oder Chat-Nachrichten einfügen.
+2. Erstelle unter [Access Tokens](https://huggingface.co/settings/tokens) einen Token mit Schreibzugriff auf diesen Space. Speichere ihn unter [GitHub Actions Secrets](https://github.com/smokemoney81/Helix/settings/secrets/actions) als `HF_DEPLOY_TOKEN`. Prüfe dabei den Repository-Namen `smokemoney81/Helix`; Secrets gelten nur für das jeweilige Repository. Den Token nie in Quellcode oder Chat-Nachrichten einfügen.
 3. Starte unter [Actions → Deploy Helix Server](https://github.com/smokemoney81/Helix/actions/workflows/deploy-hf-space.yml) den Workflow **Run workflow**. Er überträgt nur `README.md`, `requirements.txt`, `app.py`, `space_app.py` und `static/` in den Space.
 4. Sobald der Space läuft, prüfe `https://smokemoney81-helix.hf.space/api/health`. Die Android-App verwendet diese Adresse automatisch.
 
