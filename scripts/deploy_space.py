@@ -1,4 +1,4 @@
-"""Upload only the Helix server files to its Hugging Face Docker Space."""
+"""Upload only the Helix server files to its Hugging Face ZeroGPU Space."""
 
 import os
 import shutil
@@ -10,7 +10,7 @@ from huggingface_hub import HfApi
 
 ROOT = Path(__file__).resolve().parents[1]
 SPACE_ID = "smokemoney81/Helix"
-SERVER_FILES = ("README.md", "Dockerfile", "requirements.txt", "app.py")
+SERVER_FILES = ("README.md", "requirements.txt", "app.py", "space_app.py")
 
 
 def main() -> None:

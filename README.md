@@ -3,8 +3,10 @@ title: Helix Studio
 emoji: ✳️
 colorFrom: green
 colorTo: gray
-sdk: docker
-app_port: 7860
+sdk: gradio
+sdk_version: 6.30.0
+python_version: "3.12"
+app_file: space_app.py
 pinned: false
 ---
 
@@ -74,13 +76,13 @@ Optional kann ein Hugging-Face-Token als **Server-Umgebungsvariable** `HF_TOKEN`
 - **Nur einen Uvicorn-Worker verwenden.** Beim Neustart werden unterbrochene Aufträge als fehlgeschlagen markiert. Automatische Wiederholungen können doppelte Generierungen auslösen und werden deshalb nicht ausgeführt.
 - Für einen öffentlich betriebenen Mehrbenutzerdienst sind ein echter Login, betreiberweite Verbrauchsgrenzen, eine Aufbewahrungsregel und dauerhaftes Storage ergänzend erforderlich.
 
-## Optional auf Hugging Face Spaces hosten
+## Auf Hugging Face Spaces hosten
 
-Das Repository enthält ein Dockerfile und passende Space-Metadaten. So bekommt die Android-App eine erreichbare HTTPS-Adresse:
+Der kostenlose ZeroGPU-Tarif erlaubt Gradio-Spaces. `space_app.py` bindet die Helix-Oberfläche in einen solchen Space ein und stellt zugleich einen kleinen Gradio-Endpunkt bereit. So bekommt die Android-App eine erreichbare HTTPS-Adresse, ohne einen kostenpflichtigen CPU-Basic-Space einzurichten:
 
-1. Erstelle unter [Hugging Face Spaces](https://huggingface.co/new-space) einen **öffentlichen Docker-Space** namens `Helix` im Konto `smokemoney81`, mit kostenloser CPU Basic Hardware.
+1. Erstelle unter [Hugging Face Spaces](https://huggingface.co/new-space) einen **öffentlichen Gradio-Space** namens `Helix` im Konto `smokemoney81` mit ZeroGPU-Hardware. Bestehende Spaces können verwendet werden.
 2. Erstelle unter [Access Tokens](https://huggingface.co/settings/tokens) einen Token mit Schreibzugriff auf diesen Space. Speichere ihn unter [GitHub Actions Secrets](https://github.com/smokemoney81/Helix/settings/secrets/actions) als `HF_DEPLOY_TOKEN`. Den Token nie in Quellcode oder Chat-Nachrichten einfügen.
-3. Starte unter [Actions → Deploy Helix Server](https://github.com/smokemoney81/Helix/actions/workflows/deploy-hf-space.yml) den Workflow **Run workflow**. Er überträgt nur `README.md`, `Dockerfile`, `requirements.txt`, `app.py` und `static/` in den Space.
+3. Starte unter [Actions → Deploy Helix Server](https://github.com/smokemoney81/Helix/actions/workflows/deploy-hf-space.yml) den Workflow **Run workflow**. Er überträgt nur `README.md`, `requirements.txt`, `app.py`, `space_app.py` und `static/` in den Space.
 4. Sobald der Space läuft, prüfe `https://smokemoney81-helix.hf.space/api/health`. Die Android-App verwendet diese Adresse automatisch.
 
 Das Studio selbst benötigt keine GPU; die ausgewählten öffentlichen Spaces führen die Generierung aus. Ein separater `HF_TOKEN` als **Space-Secret** ist für diese öffentlichen Modelle optional und wird nicht mit dem Deploy-Token verwechselt. Kostenlose Spaces können schlafen; ohne dauerhaftes Volume können bei Neustarts gespeicherte Ergebnisse verloren gehen.
