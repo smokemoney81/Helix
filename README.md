@@ -12,6 +12,8 @@ pinned: false
 
 Ein eigenständiges, deutschsprachiges Kreativstudio mit einem von Hugging Face inspirierten Modellkatalog. Die App heißt Helix. Video und Voice werden tatsächlich über öffentliche Hugging-Face-Spaces generiert. Kein Nachbau der gesamten Hugging-Face-Plattform, keine simulierten Ergebnisse.
 
+**Android-APK herunterladen:** [Helix.apk](https://raw.githubusercontent.com/smokemoney81/Helix/main/Helix.apk). Die Datei wurde durch den [GitHub-Actions-Build](https://github.com/smokemoney81/Helix/actions/workflows/android-apk.yml) erstellt und als Android-Debug-Version signiert. Auf einem echten Smartphone benötigt sie beim ersten Start die HTTPS-Adresse eines laufenden Helix-Servers.
+
 ## Starten
 
 Python 3.12 oder neuer:
