@@ -17,6 +17,9 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.JavascriptInterface;
+import android.speech.tts.TextToSpeech;
+import java.util.Locale;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -35,11 +38,13 @@ public final class MainActivity extends Activity {
     private WebView web;
     private String serverUrl;
     private boolean homeVisible;
+    private TextToSpeech offlineTts;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         getWindow().setStatusBarColor(BACKGROUND);
         getWindow().setNavigationBarColor(BACKGROUND);
+        offlineTts = new TextToSpeech(this, status -> { if (status == TextToSpeech.SUCCESS) offlineTts.setLanguage(Locale.GERMAN); });
         serverUrl = getPreferences(MODE_PRIVATE).getString(SERVER_KEY, null);
         if (serverUrl == null) serverUrl = isEmulator() ? EMULATOR_URL : SPACE_URL;
         showHome(false);
@@ -182,6 +187,7 @@ public final class MainActivity extends Activity {
         web.setBackgroundColor(BACKGROUND);
         web.getSettings().setJavaScriptEnabled(true);
         web.getSettings().setDomStorageEnabled(true);
+        web.addJavascriptInterface(new OfflineVoiceBridge(), "HelixNative");
         web.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri target = request.getUrl();
@@ -207,7 +213,19 @@ public final class MainActivity extends Activity {
         else showHome(false);
     }
 
+    private final class OfflineVoiceBridge {
+        @JavascriptInterface public boolean isOfflineVoiceAvailable() { return offlineTts != null; }
+        @JavascriptInterface public void speak(String text, String voice, float speed, float pitch) {
+            if (offlineTts == null || text == null || text.trim().isEmpty()) return;
+            offlineTts.setSpeechRate(Math.max(0.5f, Math.min(2f, speed)));
+            offlineTts.setPitch(Math.max(0.5f, Math.min(2f, pitch)));
+            offlineTts.speak(text.trim(), TextToSpeech.QUEUE_FLUSH, null, "helix-offline");
+        }
+        @JavascriptInterface public void stopSpeaking() { if (offlineTts != null) offlineTts.stop(); }
+    }
+
     @Override protected void onDestroy() {
+        if (offlineTts != null) { offlineTts.stop(); offlineTts.shutdown(); }
         if (web != null) web.destroy();
         super.onDestroy();
     }
