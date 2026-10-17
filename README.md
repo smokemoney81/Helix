@@ -19,7 +19,8 @@ Ein eigenständiges, deutschsprachiges Kreativstudio mit einem von Hugging Face 
 Python 3.12 oder neuer:
 
 ```bash
-cd /workspace/magnetic
+git clone https://github.com/smokemoney81/Helix.git
+cd Helix
 python -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
@@ -75,7 +76,14 @@ Optional kann ein Hugging-Face-Token als **Server-Umgebungsvariable** `HF_TOKEN`
 
 ## Optional auf Hugging Face Spaces hosten
 
-Das Repository enthält ein Dockerfile und passende Space-Metadaten. Erstelle einen Docker-Space und lade die Projektdateien hoch. Trage einen optionalen `HF_TOKEN` ausschließlich in den Space-Secrets ein. Das Studio selbst benötigt keine GPU; die ausgewählten öffentlichen Spaces führen die Generierung aus. Ohne dauerhaftes Volume kann ein Neustart des Hosting-Spaces gespeicherte Ergebnisse entfernen. Es wurde kein Space angelegt und kein Deployment ausgeführt.
+Das Repository enthält ein Dockerfile und passende Space-Metadaten. So bekommt die Android-App eine erreichbare HTTPS-Adresse:
+
+1. Erstelle unter [Hugging Face Spaces](https://huggingface.co/new-space) einen **öffentlichen Docker-Space** namens `Helix` im Konto `smokemoney81`, mit kostenloser CPU Basic Hardware.
+2. Erstelle unter [Access Tokens](https://huggingface.co/settings/tokens) einen Token mit Schreibzugriff auf diesen Space. Speichere ihn unter [GitHub Actions Secrets](https://github.com/smokemoney81/Helix/settings/secrets/actions) als `HF_DEPLOY_TOKEN`. Den Token nie in Quellcode oder Chat-Nachrichten einfügen.
+3. Starte unter [Actions → Deploy Helix Server](https://github.com/smokemoney81/Helix/actions/workflows/deploy-hf-space.yml) den Workflow **Run workflow**. Er überträgt nur `README.md`, `Dockerfile`, `requirements.txt`, `app.py` und `static/` in den Space.
+4. Sobald der Space läuft, prüfe seine URL mit `/api/health` und trage diese HTTPS-Adresse in der Android-App unter **Server** ein.
+
+Das Studio selbst benötigt keine GPU; die ausgewählten öffentlichen Spaces führen die Generierung aus. Ein separater `HF_TOKEN` als **Space-Secret** ist für diese öffentlichen Modelle optional und wird nicht mit dem Deploy-Token verwechselt. Kostenlose Spaces können schlafen; ohne dauerhaftes Volume können bei Neustarts gespeicherte Ergebnisse verloren gehen. Der Space wurde noch nicht angelegt oder deployed.
 
 ## Prüfen
 
