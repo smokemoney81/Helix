@@ -36,6 +36,12 @@ jobs:
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+      - name: Set up Node for asset tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test Helix layout and German voice commands
+        run: node android/tests/voice-smoke.cjs
       - name: Build installable APK
         working-directory: android
         run: ./gradlew :app:assembleDebug --no-daemon --console=plain
