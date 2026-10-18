@@ -65,7 +65,7 @@ assert.match(nativeActivity, /JSONObject\.quote\(uri\.toString\(\)\)/);
 assert.match(nativeActivity, /takePersistableUriPermission/);
 
 const galleryStart = home.indexOf('    function galleryItems()');
-const galleryEnd = home.indexOf("    document.getElementById('upload-gallery')", galleryStart);
+const galleryEnd = home.indexOf("    document.getElementById('hx-gallery-prev').addEventListener", galleryStart);
 assert.ok(galleryStart >= 0 && galleryEnd > galleryStart, 'Gallery functions exist');
 const gallerySource = home.slice(galleryStart, galleryEnd);
 assert.doesNotMatch(gallerySource, /\.innerHTML\s*=/, 'Never interpolate filenames into HTML');
