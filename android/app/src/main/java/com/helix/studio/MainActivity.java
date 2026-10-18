@@ -23,6 +23,9 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.util.Locale;
 
 public final class MainActivity extends Activity {
     private static final String PREFS = "helix";
@@ -37,6 +40,8 @@ public final class MainActivity extends Activity {
     private String serverUrl;
     private boolean homeVisible;
     private TextToSpeech tts;
+    private boolean ttsReady;
+    private HelixVoiceController voiceController;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -44,7 +49,15 @@ public final class MainActivity extends Activity {
         getWindow().setNavigationBarColor(BACKGROUND);
         serverUrl = getPreferences(MODE_PRIVATE).getString(SERVER_KEY, null);
         if (serverUrl == null) serverUrl = isEmulator() ? EMULATOR_URL : SPACE_URL;
-        tts = new TextToSpeech(this, status -> { });
+        tts = new TextToSpeech(this, status -> ttsReady = status == TextToSpeech.SUCCESS);
+        voiceController = new HelixVoiceController(this, new HelixVoiceController.Callback() {
+            @Override public void onResult(String transcript) {
+                runOnUiThread(() -> evaluateVoiceCallback("helixVoiceResult", transcript));
+            }
+            @Override public void onStatus(String status) {
+                runOnUiThread(() -> evaluateVoiceCallback("helixVoiceStatus", status));
+            }
+        });
         showHome(false);
     }
 
@@ -63,6 +76,7 @@ public final class MainActivity extends Activity {
     }
 
     private void initRoot() {
+        if (voiceController != null) voiceController.cancel();
         if (web != null) { web.destroy(); web = null; }
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -208,7 +222,25 @@ public final class MainActivity extends Activity {
                     } else if ("pick-av-video".equals(target.getHost()) || "pick-av-audio".equals(target.getHost())) {
                         Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("pick-av-video".equals(target.getHost()) ? "video/*" : "audio/*"); startActivityForResult(picker, "pick-av-video".equals(target.getHost()) ? 46 : 47);
                     } else if ("save-video".equals(target.getHost())) Toast.makeText(MainActivity.this, "Lokales Video kann nach der Auswahl gespeichert werden.", Toast.LENGTH_LONG).show();
-                    else if ("speak".equals(target.getHost())) { String text = target.getQueryParameter("text"); String lang = target.getQueryParameter("lang"); if (tts != null && text != null) { tts.setLanguage("en".equals(lang) ? java.util.Locale.ENGLISH : "fr".equals(lang) ? java.util.Locale.FRENCH : java.util.Locale.GERMAN); tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "helix-local"); Toast.makeText(MainActivity.this, "Lokales Audio wird abgespielt.", Toast.LENGTH_SHORT).show(); } }
+                    else if ("voice-listen".equals(target.getHost())) {
+                        if (voiceController != null) voiceController.start();
+                    } else if ("voice-list".equals(target.getHost())) {
+                        postOfflineGermanVoices();
+                    } else if ("voice-select".equals(target.getHost())) {
+                        String name = target.getQueryParameter("name");
+                        if (findGermanOfflineVoice(name) != null) {
+                            getPreferences(MODE_PRIVATE).edit().putString("german_offline_voice", name).apply();
+                            postOfflineGermanVoices();
+                        }
+                    } else if ("voice-preview".equals(target.getHost())) {
+                        String name = target.getQueryParameter("name");
+                        if (findGermanOfflineVoice(name) != null) {
+                            getPreferences(MODE_PRIVATE).edit().putString("german_offline_voice", name).apply();
+                            speakOfflineGerman("Hallo, ich bin deine lokale deutsche Stimme für Helix.");
+                        }
+                    } else if ("speak".equals(target.getHost())) {
+                        speakOfflineGerman(target.getQueryParameter("text"));
+                    }
                     return true;
                 }
                 if ("https".equals(target.getScheme()) && "huggingface.co".equalsIgnoreCase(target.getHost())) {
@@ -220,6 +252,84 @@ public final class MainActivity extends Activity {
         });
         root.addView(web, new LinearLayout.LayoutParams(-1, -1));
         web.loadUrl("file:///android_asset/home.html" + (serverUnavailable ? "?offline=1" : ""));
+    }
+
+
+    private void evaluateVoiceCallback(String method, String value) {
+        if (!homeVisible || web == null || !("helixVoiceResult".equals(method) || "helixVoiceStatus".equals(method))) return;
+        web.evaluateJavascript("window." + method + " && window." + method + "(" + JSONObject.quote(value) + ")", null);
+    }
+
+    /** Never select a voice requiring network access, even if the system TTS default is online. */
+    private android.speech.tts.Voice findGermanOfflineVoice(String selectedName) {
+        if (!ttsReady || tts == null || tts.getVoices() == null) return null;
+        android.speech.tts.Voice first = null;
+        for (android.speech.tts.Voice candidate : tts.getVoices()) {
+            if (candidate == null || candidate.getLocale() == null || candidate.isNetworkConnectionRequired()) continue;
+            if (!Locale.GERMAN.getLanguage().equals(candidate.getLocale().getLanguage())) continue;
+            if (selectedName != null && selectedName.equals(candidate.getName())) return candidate;
+            if (first == null || (Locale.GERMANY.equals(candidate.getLocale()) && !Locale.GERMANY.equals(first.getLocale())))
+                first = candidate;
+        }
+        return selectedName == null ? first : null;
+    }
+
+    private void postOfflineGermanVoices() {
+        JSONArray voices = new JSONArray();
+        String selected = getPreferences(MODE_PRIVATE).getString("german_offline_voice", null);
+        if (ttsReady && tts != null && tts.getVoices() != null) {
+            for (android.speech.tts.Voice voice : tts.getVoices()) {
+                if (voice == null || voice.getLocale() == null || voice.isNetworkConnectionRequired()) continue;
+                if (!Locale.GERMAN.getLanguage().equals(voice.getLocale().getLanguage())) continue;
+                JSONObject item = new JSONObject();
+                try {
+                    item.put("name", voice.getName());
+                    item.put("language", voice.getLocale().toLanguageTag());
+                    voices.put(item);
+                } catch (Exception ignored) { }
+            }
+        }
+        if (homeVisible && web != null) {
+            String script = "window.helixVoiceChoices && window.helixVoiceChoices("
+                + voices.toString() + "," + JSONObject.quote(selected == null ? "" : selected) + ")";
+            web.evaluateJavascript(script, null);
+        }
+    }
+
+    private void speakOfflineGerman(String text) {
+        if (text == null || text.trim().isEmpty()) return;
+        if (text.length() > TextToSpeech.getMaxSpeechInputLength()) {
+            Toast.makeText(this, "Text zu lang für die lokale Sprachausgabe.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (!ttsReady || tts == null) {
+            Toast.makeText(this, "Lokale Sprachausgabe ist noch nicht bereit.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String preferred = getPreferences(MODE_PRIVATE).getString("german_offline_voice", null);
+        android.speech.tts.Voice voice = findGermanOfflineVoice(preferred);
+        if (voice == null) voice = findGermanOfflineVoice(null);
+        if (voice == null) {
+            Toast.makeText(this, "Keine lokale deutsche Stimme installiert. Sprachdaten in Android installieren.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (tts.setVoice(voice) != TextToSpeech.SUCCESS) {
+            Toast.makeText(this, "Lokale Stimme kann nicht aktiviert werden.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "helix-local") == TextToSpeech.ERROR) {
+            Toast.makeText(this, "Lokale Sprachausgabe fehlgeschlagen.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (voiceController != null) voiceController.onRequestPermissionsResult(requestCode, grantResults);
+    }
+
+    @Override protected void onPause() {
+        if (voiceController != null) voiceController.cancel();
+        super.onPause();
     }
 
     @Override public void onBackPressed() {
@@ -238,6 +348,7 @@ public final class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        if (voiceController != null) voiceController.destroy();
         if (web != null) web.destroy();
         if (tts != null) { tts.stop(); tts.shutdown(); }
         super.onDestroy();
