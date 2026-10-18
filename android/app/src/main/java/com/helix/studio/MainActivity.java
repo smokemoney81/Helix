@@ -50,7 +50,12 @@ public final class MainActivity extends Activity {
         getWindow().setNavigationBarColor(BACKGROUND);
         serverUrl = getPreferences(MODE_PRIVATE).getString(SERVER_KEY, null);
         if (serverUrl == null) serverUrl = isEmulator() ? EMULATOR_URL : SPACE_URL;
-        tts = new TextToSpeech(this, status -> ttsReady = status == TextToSpeech.SUCCESS);
+        tts = new TextToSpeech(this, status -> {
+            ttsReady = status == TextToSpeech.SUCCESS;
+            runOnUiThread(() -> {
+                if (homeVisible && web != null) postOfflineGermanVoices();
+            });
+        });
         voiceController = new HelixVoiceController(this, new HelixVoiceController.Callback() {
             @Override public void onResult(String transcript) {
                 runOnUiThread(() -> evaluateVoiceCallback("helixVoiceResult", transcript));
@@ -209,6 +214,9 @@ public final class MainActivity extends Activity {
         web.getSettings().setJavaScriptEnabled(true);
         web.getSettings().setDomStorageEnabled(true);
         web.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView view, String url) {
+                if (homeVisible && url != null && url.startsWith("file:///android_asset/home.html")) postOfflineGermanVoices();
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri target = request.getUrl();
                 if ("baitbuddy".equals(target.getScheme())) {
