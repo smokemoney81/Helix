@@ -383,6 +383,15 @@ public final class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode != RESULT_OK || data == null || data.getData() == null || web == null) return;
         Uri uri = data.getData();
+        // Keep access to selected gallery media after the activity or app restarts.
+        try {
+            if ((data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION) != 0) {
+                getContentResolver().takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
+        } catch (SecurityException ignored) {
+            // Providers without persistable grants are usable for the current session.
+        }
         String name = uri.getLastPathSegment() == null ? "Datei ausgewählt" : uri.getLastPathSegment();
         // Never interpolate document-provider names or URIs into executable JavaScript.
         if (requestCode == 42) {
