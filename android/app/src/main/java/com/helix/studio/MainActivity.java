@@ -42,6 +42,7 @@ public final class MainActivity extends Activity {
     private TextToSpeech tts;
     private boolean ttsReady;
     private HelixVoiceController voiceController;
+    private HelixCatalogClient catalogClient;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -57,6 +58,14 @@ public final class MainActivity extends Activity {
             @Override public void onStatus(String status) {
                 runOnUiThread(() -> evaluateVoiceCallback("helixVoiceStatus", status));
             }
+        });
+        catalogClient = new HelixCatalogClient(this, (requestId, json, error) -> {
+            if (!homeVisible || web == null) return;
+            String callbackScript = "window.helixCatalogResponse && window.helixCatalogResponse("
+                + JSONObject.quote(requestId) + ","
+                + JSONObject.quote(json == null ? "" : json) + ","
+                + (error == null ? "null" : JSONObject.quote(error)) + ")";
+            web.evaluateJavascript(callbackScript, null);
         });
         showHome(false);
     }
@@ -222,7 +231,12 @@ public final class MainActivity extends Activity {
                     } else if ("pick-av-video".equals(target.getHost()) || "pick-av-audio".equals(target.getHost())) {
                         Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("pick-av-video".equals(target.getHost()) ? "video/*" : "audio/*"); startActivityForResult(picker, "pick-av-video".equals(target.getHost()) ? 46 : 47);
                     } else if ("save-video".equals(target.getHost())) Toast.makeText(MainActivity.this, "Lokales Video kann nach der Auswahl gespeichert werden.", Toast.LENGTH_LONG).show();
-                    else if ("voice-listen".equals(target.getHost())) {
+                    else if ("catalog".equals(target.getHost())) {
+                        if (catalogClient != null) catalogClient.search(
+                            target.getQueryParameter("tag"),
+                            target.getQueryParameter("offset"),
+                            target.getQueryParameter("request"));
+                    } else if ("voice-listen".equals(target.getHost())) {
                         if (voiceController != null) voiceController.start();
                     } else if ("voice-list".equals(target.getHost())) {
                         postOfflineGermanVoices();
@@ -348,6 +362,7 @@ public final class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        if (catalogClient != null) catalogClient.destroy();
         if (voiceController != null) voiceController.destroy();
         if (web != null) web.destroy();
         if (tts != null) { tts.stop(); tts.shutdown(); }
