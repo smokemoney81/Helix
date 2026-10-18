@@ -281,6 +281,14 @@ public final class MainActivity extends Activity {
                         if (localChatClient != null) localChatClient.send(
                             target.getQueryParameter("request"),
                             target.getQueryParameter("messages"));
+                    } else if ("model-info".equals(target.getHost())) {
+                        if (localChatClient != null) localChatClient.getActiveModel((id, error) -> {
+                            if (!homeVisible || web == null) return;
+                            String script = "window.helixLocalModelInfo && window.helixLocalModelInfo("
+                                + (id == null ? "null" : JSONObject.quote(id)) + ","
+                                + (error == null ? "null" : JSONObject.quote(error)) + ")";
+                            web.evaluateJavascript(script, null);
+                        });
                     } else if ("open-chatgpt".equals(target.getHost())) {
                         try {
                             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/")));
