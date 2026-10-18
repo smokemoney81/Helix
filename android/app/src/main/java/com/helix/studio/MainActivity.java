@@ -398,14 +398,20 @@ public final class MainActivity extends Activity {
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (voiceController != null) voiceController.onRequestPermissionsResult(requestCode, grantResults);
-        if (requestCode == 72 && mediaTools != null && grantResults.length > 0
-                && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            mediaTools.startRecording();
+        if (requestCode == 72 && mediaTools != null) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                mediaTools.startRecording();
+            } else {
+                Toast.makeText(this, "Mikrofonberechtigung abgelehnt.", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
     @Override protected void onPause() {
         if (voiceController != null) voiceController.cancel();
+        // Recording must never continue silently after Helix goes to the background.
+        if (mediaTools != null && mediaTools.isRecording()) mediaTools.stopRecording();
         super.onPause();
     }
 
