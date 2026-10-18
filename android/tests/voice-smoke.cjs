@@ -57,4 +57,49 @@ for (const [phrase, expectedType, expectedValue] of cases) {
     phrase + ': wrong action target',
   );
 }
-console.log('Helix script/layout/voice checks passed; voice commands:', cases.length);
+// File pickers must not inject provider-controlled file names into JavaScript or HTML.
+const vm = require('node:vm');
+const nativeActivity = fs.readFileSync(path.join(__dirname, '..', 'app', 'src', 'main', 'java', 'com', 'helix', 'studio', 'MainActivity.java'), 'utf8');
+assert.match(nativeActivity, /JSONObject\.quote\(name\)/);
+assert.match(nativeActivity, /JSONObject\.quote\(uri\.toString\(\)\)/);
+assert.match(nativeActivity, /takePersistableUriPermission/);
+
+const galleryStart = home.indexOf('    function galleryItems()');
+const galleryEnd = home.indexOf("    document.getElementById('upload-gallery')", galleryStart);
+assert.ok(galleryStart >= 0 && galleryEnd > galleryStart, 'Gallery functions exist');
+const gallerySource = home.slice(galleryStart, galleryEnd);
+assert.doesNotMatch(gallerySource, /\.innerHTML\s*=/, 'Never interpolate filenames into HTML');
+function element(tagName) {
+  return {
+    tagName, childNodes: [],
+    appendChild(node) { this.childNodes.push(node); },
+    replaceChildren(...children) { this.childNodes = children; }
+  };
+}
+const galleryGrid = element('div');
+const pickedMedia = element('div');
+const stored = new Map();
+const galleryWindow = {};
+vm.runInNewContext(gallerySource, {
+  window: galleryWindow,
+  document: {
+    createElement: element,
+    getElementById(id) {
+      return id === 'gallery-grid' ? galleryGrid : id === 'picked-media' ? pickedMedia : null;
+    }
+  },
+  localStorage: {
+    getItem(key) { return stored.get(key) || null; },
+    setItem(key, value) { stored.set(key, value); }
+  }
+});
+const fileName = '<img src=x onerror=alert(1)>';
+galleryWindow.showPickedMedia('content://com.example.media/test/1', fileName, 'image/png');
+assert.equal(galleryGrid.childNodes.length, 1);
+assert.equal(galleryGrid.childNodes[0].childNodes[1].textContent, fileName);
+assert.equal(galleryGrid.childNodes[0].childNodes[0].tagName, 'img');
+assert.equal(JSON.parse(stored.get('helix_gallery'))[0].name, fileName);
+galleryWindow.showPickedMedia('javascript:alert(1)', 'bad', 'image/png');
+assert.equal(galleryGrid.childNodes.length, 1, 'Unsupported URI must be rejected');
+
+console.log('Helix layout, voice and safe gallery checks passed; voice commands:', cases.length);
