@@ -31,6 +31,8 @@ assert.match(home, /offline-studio\.css/);
 assert.match(offlineStudio, /helix:\/\/tools-merge/);
 assert.match(offlineStudio, /helix:\/\/tools-record/);
 assert.match(offlineStudio, /helix:\/\/model-info/);
+assert.match(offlineStudio, /helixPickedGGUF/);
+assert.match(offlineStudio, /noch nicht in Termux geladen/);
 assert.match(media, /MediaMuxer/);
 assert.match(media, /MediaRecorder/);
 assert.match(media, /MediaStore\.Video\.Media\.EXTERNAL_CONTENT_URI/);
