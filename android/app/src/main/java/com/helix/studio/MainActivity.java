@@ -44,6 +44,7 @@ public final class MainActivity extends Activity {
     private HelixVoiceController voiceController;
     private HelixCatalogClient catalogClient;
     private HelixLocalChatClient localChatClient;
+    private HelixMediaTools mediaTools;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -79,6 +80,14 @@ public final class MainActivity extends Activity {
                 + JSONObject.quote(requestId) + ","
                 + JSONObject.quote(answer == null ? "" : answer) + ","
                 + (error == null ? "null" : JSONObject.quote(error)) + ")";
+            web.evaluateJavascript(callbackScript, null);
+        });
+        mediaTools = new HelixMediaTools(this, (status, path, success) -> {
+            if (!homeVisible || web == null) return;
+            String callbackScript = "window.helixMediaResult && window.helixMediaResult("
+                + JSONObject.quote(status) + ","
+                + (path == null ? "null" : JSONObject.quote(path)) + ","
+                + success + ")";
             web.evaluateJavascript(callbackScript, null);
         });
         showHome(false);
@@ -247,6 +256,21 @@ public final class MainActivity extends Activity {
                         Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("*/*"); picker.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"}); startActivityForResult(picker, 44);
                     } else if ("pick-av-video".equals(target.getHost()) || "pick-av-audio".equals(target.getHost())) {
                         Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("pick-av-video".equals(target.getHost()) ? "video/*" : "audio/*"); startActivityForResult(picker, "pick-av-video".equals(target.getHost()) ? 46 : 47);
+                    } else if ("tools-video".equals(target.getHost()) || "tools-audio".equals(target.getHost())) {
+                        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                        picker.addCategory(Intent.CATEGORY_OPENABLE);
+                        picker.setType("tools-video".equals(target.getHost()) ? "video/*" : "audio/*");
+                        picker.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                        startActivityForResult(picker, "tools-video".equals(target.getHost()) ? 146 : 147);
+                    } else if ("tools-record".equals(target.getHost())) {
+                        if (mediaTools != null) {
+                            if (mediaTools.isRecording()) mediaTools.stopRecording();
+                            else if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+                                mediaTools.startRecording();
+                            else requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 72);
+                        }
+                    } else if ("tools-merge".equals(target.getHost())) {
+                        if (mediaTools != null) mediaTools.merge();
                     } else if ("save-video".equals(target.getHost())) Toast.makeText(MainActivity.this, "Lokales Video kann nach der Auswahl gespeichert werden.", Toast.LENGTH_LONG).show();
                     else if ("catalog".equals(target.getHost())) {
                         if (catalogClient != null) catalogClient.search(
@@ -257,6 +281,14 @@ public final class MainActivity extends Activity {
                         if (localChatClient != null) localChatClient.send(
                             target.getQueryParameter("request"),
                             target.getQueryParameter("messages"));
+                    } else if ("model-info".equals(target.getHost())) {
+                        if (localChatClient != null) localChatClient.getActiveModel((id, error) -> {
+                            if (!homeVisible || web == null) return;
+                            String script = "window.helixLocalModelInfo && window.helixLocalModelInfo("
+                                + (id == null ? "null" : JSONObject.quote(id)) + ","
+                                + (error == null ? "null" : JSONObject.quote(error)) + ")";
+                            web.evaluateJavascript(script, null);
+                        });
                     } else if ("open-chatgpt".equals(target.getHost())) {
                         try {
                             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/")));
@@ -366,10 +398,20 @@ public final class MainActivity extends Activity {
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (voiceController != null) voiceController.onRequestPermissionsResult(requestCode, grantResults);
+        if (requestCode == 72 && mediaTools != null) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                mediaTools.startRecording();
+            } else {
+                Toast.makeText(this, "Mikrofonberechtigung abgelehnt.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override protected void onPause() {
         if (voiceController != null) voiceController.cancel();
+        // Recording must never continue silently after Helix goes to the background.
+        if (mediaTools != null && mediaTools.isRecording()) mediaTools.stopRecording();
         super.onPause();
     }
 
@@ -392,14 +434,23 @@ public final class MainActivity extends Activity {
         } catch (SecurityException ignored) {
             // Providers without persistable grants are usable for the current session.
         }
+        if (requestCode == 146 || requestCode == 147) {
+            if (mediaTools != null) {
+                if (requestCode == 146) mediaTools.setVideo(uri);
+                else mediaTools.setAudio(uri);
+            }
+            return;
+        }
         String name = uri.getLastPathSegment() == null ? "Datei ausgewählt" : uri.getLastPathSegment();
-        // Never interpolate document-provider names or URIs into executable JavaScript.
+        try (android.database.Cursor cursor = getContentResolver().query(uri,
+                new String[]{android.provider.OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst() && !cursor.isNull(0))
+                name = cursor.getString(0);
+        } catch (Exception ignored) { }
+        // Provider-controlled filenames are JSON-quoted and inserted as text only.
         if (requestCode == 42) {
-            String script = "(function(){const select=document.getElementById('local-model');"
-                + "if(!select)return;const option=document.createElement('option');"
-                + "option.textContent=" + JSONObject.quote(name)
-                + ";select.replaceChildren(option);})()";
-            web.evaluateJavascript(script, null);
+            web.evaluateJavascript("window.helixPickedGGUF && window.helixPickedGGUF("
+                + JSONObject.quote(name) + ")", null);
             return;
         }
         if (requestCode != 41 && requestCode != 43 && requestCode != 44
@@ -416,6 +467,7 @@ public final class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        if (mediaTools != null) mediaTools.destroy();
         if (localChatClient != null) localChatClient.destroy();
         if (catalogClient != null) catalogClient.destroy();
         if (voiceController != null) voiceController.destroy();

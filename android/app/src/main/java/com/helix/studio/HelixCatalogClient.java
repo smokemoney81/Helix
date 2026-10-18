@@ -30,7 +30,7 @@ final class HelixCatalogClient {
 
     void search(String tag, String offsetText, String requestId) {
         if (!("text-to-video".equals(tag) || "image-to-video".equals(tag) ||
-              "text-to-image".equals(tag) || "text-to-audio".equals(tag))) {
+              "text-to-image".equals(tag) || "text-to-audio".equals(tag) || "text-generation".equals(tag))) {
             deliver(requestId, null, "Modellkategorie nicht erlaubt.");
             return;
         }
