@@ -1,0 +1,16 @@
+{
+  "name": "HELIX",
+  "short_name": "HELIX",
+  "description": "HELIX Modelle entdecken",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#020714",
+  "theme_color": "#030a17",
+  "icons": [{
+    "src": "./helix-icon.svg",
+    "sizes": "any",
+    "type": "image/svg+xml",
+    "purpose": "any maskable"
+  }]
+}
