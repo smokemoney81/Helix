@@ -384,8 +384,26 @@ public final class MainActivity extends Activity {
         if (resultCode != RESULT_OK || data == null || data.getData() == null || web == null) return;
         Uri uri = data.getData();
         String name = uri.getLastPathSegment() == null ? "Datei ausgewählt" : uri.getLastPathSegment();
-        if (requestCode == 42) web.evaluateJavascript("document.getElementById('local-model').innerHTML='<option>" + name.replace("'", "") + "</option>'", null);
-        else web.evaluateJavascript("window.showPickedMedia && window.showPickedMedia('" + uri.toString().replace("'", "%27") + "','" + name.replace("'", "") + "','" + (requestCode == 43 || requestCode == 44 && getContentResolver().getType(uri) != null && getContentResolver().getType(uri).startsWith("image/") ? "image/*" : requestCode == 47 ? "audio/*" : "video/*") + "')", null);
+        // Never interpolate document-provider names or URIs into executable JavaScript.
+        if (requestCode == 42) {
+            String script = "(function(){const select=document.getElementById('local-model');"
+                + "if(!select)return;const option=document.createElement('option');"
+                + "option.textContent=" + JSONObject.quote(name)
+                + ";select.replaceChildren(option);})()";
+            web.evaluateJavascript(script, null);
+            return;
+        }
+        if (requestCode != 41 && requestCode != 43 && requestCode != 44
+                && requestCode != 46 && requestCode != 47) return;
+        String mimeType = getContentResolver().getType(uri);
+        String mediaType = requestCode == 43
+                || (requestCode == 44 && mimeType != null && mimeType.startsWith("image/"))
+                ? "image/*" : requestCode == 47 ? "audio/*" : "video/*";
+        String script = "window.showPickedMedia && window.showPickedMedia("
+                + JSONObject.quote(uri.toString()) + ","
+                + JSONObject.quote(name) + ","
+                + JSONObject.quote(mediaType) + ")";
+        web.evaluateJavascript(script, null);
     }
 
     @Override protected void onDestroy() {
