@@ -153,16 +153,45 @@ body>.bottom,body>.offline{display:none!important}
     document.querySelectorAll('.filter').forEach(button=>button.addEventListener('click',()=>{filter=button.dataset.filter;hxModelPage=0;document.querySelectorAll('.filter').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));if(filter!=='all'&&!models.find(m=>m.id===selected&&m.kind===filter))selected=(models.find(m=>m.kind===filter)||models[0]).id;render();}));
     window.helixDiscoverIndex=0;
     try { const cache=JSON.parse(localStorage.getItem('helix_discovered_models')||'[]'); if(Array.isArray(cache)) models.push(...cache.filter(m=>m&&typeof m.id==='string'&&m.id.startsWith('hf:')&&m.kind!=='voice'&&typeof m.url==='string'&&m.url.startsWith('https://huggingface.co/')).slice(-100)); } catch(e) {}
+    // Query through the Android host when opened as a local WebView asset:
+    // this avoids file:// CORS restrictions without exposing an arbitrary network bridge.
+    let helixCatalogSequence=0;
+    const helixCatalogCallbacks=new Map();
+    window.helixCatalogResponse=(requestId,json,error)=>{
+      const pending=helixCatalogCallbacks.get(requestId);
+      if(!pending)return;
+      helixCatalogCallbacks.delete(requestId);
+      clearTimeout(pending.timer);
+      if(error){pending.reject(new Error(String(error)));return;}
+      try{pending.resolve(JSON.parse(json));}
+      catch(parseError){pending.reject(new Error('Ungültige Modellantwort'));}
+    };
+    function helixFetchCatalog(tag,offset){
+      const url='https://huggingface.co/api/models?pipeline_tag='+encodeURIComponent(tag)+'&sort=createdAt&direction=-1&limit=25&offset='+offset;
+      if(location.protocol!=='file:' || !/Android/i.test(navigator.userAgent)){
+        return fetch(url,{headers:{Accept:'application/json'}}).then(response=>{
+          if(!response.ok)throw new Error('API HTTP '+response.status);
+          return response.json();
+        });
+      }
+      return new Promise((resolve,reject)=>{
+        const requestId='catalog_'+(++helixCatalogSequence);
+        const timer=setTimeout(()=>{
+          helixCatalogCallbacks.delete(requestId);
+          reject(new Error('Zeitüberschreitung bei der Modellsuche'));
+        },25000);
+        helixCatalogCallbacks.set(requestId,{resolve,reject,timer});
+        location.href='helix://catalog?tag='+encodeURIComponent(tag)+'&offset='+offset+'&request='+encodeURIComponent(requestId);
+      });
+    }
+
     document.getElementById('load-more').addEventListener('click',async()=>{
       const button=document.getElementById('load-more');if(button.disabled)return;
       button.disabled=true;button.textContent='Neue Modelle werden gesucht …';
       try {
         const tags=['text-to-video','image-to-video','text-to-image','text-to-audio'];
         const tag=tags[window.helixDiscoverIndex%tags.length],offset=Math.floor(window.helixDiscoverIndex/tags.length)*25;
-        const url='https://huggingface.co/api/models?pipeline_tag='+encodeURIComponent(tag)+'&sort=createdAt&direction=-1&limit=25&offset='+offset;
-        const response=await fetch(url,{headers:{Accept:'application/json'}});
-        if(!response.ok)throw new Error('API HTTP '+response.status);
-        const data=await response.json();if(!Array.isArray(data))throw new Error('API result invalid');
+        const data=await helixFetchCatalog(tag,offset);if(!Array.isArray(data))throw new Error('API result invalid');
         let added=0;
         for(const item of data){
           if(!item||typeof item.id!=='string'||item.gated||item.private||item.disabled)continue;
