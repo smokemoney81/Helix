@@ -78,14 +78,23 @@ function element(tagName) {
 }
 const galleryGrid = element('div');
 const pickedMedia = element('div');
+const galleryCount = { textContent: '' };
+const galleryPrev = { disabled: false };
+const galleryNext = { disabled: false };
 const stored = new Map();
 const galleryWindow = {};
-vm.runInNewContext(gallerySource, {
+const galleryContext = vm.createContext({
   window: galleryWindow,
   document: {
     createElement: element,
     getElementById(id) {
-      return id === 'gallery-grid' ? galleryGrid : id === 'picked-media' ? pickedMedia : null;
+      return ({
+        'gallery-grid': galleryGrid,
+        'picked-media': pickedMedia,
+        'hx-gallery-count': galleryCount,
+        'hx-gallery-prev': galleryPrev,
+        'hx-gallery-next': galleryNext
+      })[id] || null;
     }
   },
   localStorage: {
@@ -93,6 +102,7 @@ vm.runInNewContext(gallerySource, {
     setItem(key, value) { stored.set(key, value); }
   }
 });
+vm.runInContext(gallerySource, galleryContext);
 const fileName = '<img src=x onerror=alert(1)>';
 galleryWindow.showPickedMedia('content://com.example.media/test/1', fileName, 'image/png');
 assert.equal(galleryGrid.childNodes.length, 1);
@@ -101,5 +111,17 @@ assert.equal(galleryGrid.childNodes[0].childNodes[0].tagName, 'img');
 assert.equal(JSON.parse(stored.get('helix_gallery'))[0].name, fileName);
 galleryWindow.showPickedMedia('javascript:alert(1)', 'bad', 'image/png');
 assert.equal(galleryGrid.childNodes.length, 1, 'Unsupported URI must be rejected');
+for (let i = 2; i <= 6; i++) {
+  galleryWindow.showPickedMedia('content://com.example.media/test/' + i, 'Media ' + i, 'video/mp4');
+}
+assert.equal(galleryGrid.childNodes.length, 4, 'Gallery fits four cards on a screen');
+assert.equal(galleryCount.textContent, '1 / 2');
+assert.equal(galleryPrev.disabled, true);
+assert.equal(galleryNext.disabled, false);
+vm.runInContext('hxGalleryPage = 1; renderGallery();', galleryContext);
+assert.equal(galleryGrid.childNodes.length, 2, 'Second page contains remaining media');
+assert.equal(galleryCount.textContent, '2 / 2');
+assert.equal(galleryPrev.disabled, false);
+assert.equal(galleryNext.disabled, true);
 
 console.log('Helix layout, voice and safe gallery checks passed; voice commands:', cases.length);
