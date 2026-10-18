@@ -1,0 +1,26 @@
+/* ChatGPT shortcut and fixed, paginated, offline-only Helix chat. */
+.hx-assistant{display:flex;flex-direction:column;gap:5px;min-height:0}
+.hx-assistant #hx-chat-slot{min-height:0;flex:1;display:flex;flex-direction:column}
+.hx-assistant #hx-chat-slot .chat{flex:1;min-height:0;display:flex;flex-direction:column;gap:5px}
+.hx-chat-actions{display:grid;grid-template-columns:1.1fr 1fr .85fr;gap:5px;flex-shrink:0}
+.hx-chat-actions button{border:1px solid #5687a7;border-radius:9px;min-width:0;min-height:34px;padding:6px 4px;background:#183451e5;color:#eaf6ff;font-size:10px;font-weight:700}
+.hx-chat-actions #hx-open-chatgpt{border-color:#b9f18480;background:#283d34ec;color:#def9b4}
+.hx-assistant .chat-log{flex:1;min-height:42px;max-height:none;overflow:hidden;border:1px solid #344e6c;border-radius:9px;padding:7px;background:#07172cbb;line-height:1.35;font-size:11px;display:block}
+.hx-chat-entry{display:block;overflow-wrap:anywhere;word-break:normal}
+.hx-chat-entry strong{color:#b9f184}
+.hx-chat-pager{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:24px;flex-shrink:0}
+.hx-chat-pager button{min-height:25px;min-width:45px;padding:2px 8px;border:1px solid #466887;background:#17304b;border-radius:8px;color:#e4f3ff}
+.hx-chat-pager button:disabled{opacity:.35}
+.hx-chat-pager span{color:#bcd0e0;font-size:10px}
+.hx-assistant .chat input#chat-input{flex:1;min-width:0;min-height:39px!important;height:39px}
+.hx-assistant #chat-send{font-size:11px;min-height:39px;min-width:85px;padding:7px}
+#hx-local-chat-status{flex:0 0 auto;font-size:10px;line-height:1.25;color:#c6d3e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:12px}
+@media(max-height:710px){
+  .hx-chat-actions button{min-height:28px;font-size:9px}
+  .hx-assistant .chat-log{min-height:30px;font-size:10px;padding:4px}
+  .hx-chat-pager{min-height:22px}
+  .hx-assistant{gap:3px}
+  .hx-assistant .chat{gap:3px}
+  #hx-local-chat-status{font-size:9px}
+}
+@media(max-width:360px){.hx-chat-actions button{font-size:9px}.hx-assistant #chat-send{min-width:68px;font-size:10px}}
