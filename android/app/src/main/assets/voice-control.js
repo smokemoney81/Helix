@@ -18,6 +18,70 @@
   const message = document.getElementById('hx-voice-status');
   const microphone = document.getElementById('hx-microphone');
 
+  // Shared offline German voice choice, available on Home and in Voice Studio.
+  const selectorPanel = document.createElement('div');
+  selectorPanel.className = 'hx-voice-prefs';
+  selectorPanel.innerHTML = '<label for="hx-home-voices">Lokale deutsche Stimme</label>' +
+    '<select id="hx-home-voices" aria-label="Deutsche Stimme auf der Startseite" disabled><option>Sprachdaten prüfen …</option></select>';
+  const homeGuide = document.querySelector('#hx-home .hx-guide');
+  if (homeGuide) homeGuide.insertAdjacentElement('afterend', selectorPanel);
+  const studioPanel = document.createElement('div');
+  studioPanel.className = 'hx-studio-voices';
+  studioPanel.innerHTML = '<label for="hx-studio-voices">Deutsche Offline-Stimme auswählen</label>' +
+    '<select id="hx-studio-voices" disabled><option>Sprachdaten prüfen …</option></select>' +
+    '<button type="button" id="hx-voice-preview" disabled>Stimme anhören</button>' +
+    '<button type="button" id="hx-voice-refresh">Lokale Stimmen aktualisieren</button>';
+  const studio = document.getElementById('hx-voice-slot');
+  if (studio) studio.insertBefore(studioPanel, studio.firstChild);
+  const homeSelect = document.getElementById('hx-home-voices');
+  const studioSelect = document.getElementById('hx-studio-voices');
+  const previewButton = document.getElementById('hx-voice-preview');
+  let currentVoice = '';
+
+  function requestOfflineVoices() {
+    window.location.href = 'helix://voice-list';
+  }
+
+  window.helixVoiceChoices = function (choices, selected) {
+    const voices = Array.isArray(choices) ? choices.filter(v => v && typeof v.name === 'string') : [];
+    currentVoice = voices.some(v => v.name === selected) ? selected : (voices[0] ? voices[0].name : '');
+    for (const select of [homeSelect, studioSelect]) {
+      select.replaceChildren();
+      if (!voices.length) {
+        const option = document.createElement('option');
+        option.textContent = 'Keine lokale deutsche Stimme installiert';
+        select.appendChild(option);
+      } else {
+        voices.forEach((voice, i) => {
+          const option = document.createElement('option');
+          option.value = voice.name;
+          option.textContent = 'Deutsch (' + (voice.language || 'de') + ') · ' + (i + 1);
+          select.appendChild(option);
+        });
+        select.value = currentVoice;
+      }
+      select.disabled = voices.length === 0;
+    }
+    previewButton.disabled = voices.length === 0;
+  };
+
+  function chooseOfflineVoice(event) {
+    if (!event.target.value) return;
+    currentVoice = event.target.value;
+    for (const select of [homeSelect,studioSelect]) select.value = currentVoice;
+    window.location.href = 'helix://voice-select?name=' + encodeURIComponent(currentVoice);
+  }
+
+  homeSelect.addEventListener('change', chooseOfflineVoice);
+  studioSelect.addEventListener('change', chooseOfflineVoice);
+  previewButton.addEventListener('click', function () {
+    if (currentVoice) window.location.href = 'helix://voice-preview?name=' + encodeURIComponent(currentVoice);
+  });
+  document.getElementById('hx-voice-refresh').addEventListener('click', requestOfflineVoices);
+  document.querySelectorAll('[data-hx="voice"]').forEach(button => button.addEventListener('click', requestOfflineVoices));
+  requestOfflineVoices();
+
+
   function updateStatus(value) {
     message.textContent = String(value || '');
   }
@@ -95,6 +159,7 @@
     }
     if (action.type === 'page') {
       hxNavigate(action.page);
+      if (action.page === 'voice') requestOfflineVoices();
       updateStatus('Geöffnet: ' + document.getElementById('hx-title').textContent);
       return;
     }
