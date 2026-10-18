@@ -80,7 +80,7 @@ body>.bottom,body>.offline{display:none!important}
 .hx-pages button{min-width:90px}.hx-pages button:disabled{opacity:.4}.hx-pages span{font-size:11px;color:#c4d5e6}
 #hx-gallery-slot>.gallery{padding:12px;margin:0}#hx-gallery-slot>.gallery h2,#hx-gallery-slot>.gallery p{display:none}
 #hx-gallery-slot>.gallery .gallery-grid{margin:8px 0}
-#hx-gallery-slot>.gallery .gallery-item:nth-child(n+5){display:none}
+#hx-gallery-slot>.gallery .gallery-item audio{width:100%;height:42px}
 #hx-gallery-slot>.gallery .gallery-item img,#hx-gallery-slot>.gallery .gallery-item video{height:45px}
 #hx-gallery-slot>#picked-media{display:none}
 @media(max-height:690px){.hx-page{gap:5px}.hx-guide button{min-height:64px;padding:7px}.hx-assistant{padding:8px}.hx-assistant>p{display:none}.hx-assistant .chat-log{max-height:28px}}
@@ -111,7 +111,7 @@ body>.bottom,body>.offline{display:none!important}
           <section class="hx-page" id="hx-voice" hidden><h1>Voice-Studio</h1><p>Deutsche Android-Stimme. Offline nur mit installierten Sprachdaten.</p><div id="hx-voice-slot"></div><button type="button" class="hx-back" data-hx="home">‹ Zur Startseite</button></section>
           <section class="hx-page" id="hx-project" hidden><h1>Video und Projekt</h1><p>Modell auswählen und Projekt vorbereiten.</p><div id="hx-project-slot"></div><button type="button" class="hx-back" data-hx="models">‹ Zu den Modellen</button></section>
           <section class="hx-page" id="hx-models" hidden><h1>Modelle entdecken</h1><p>Öffentliche Modelle suchen; Ausführung kann Einschränkungen haben.</p><div id="hx-models-slot"></div><div class="hx-pages"><button type="button" id="hx-prev">‹ Zurück</button><span id="hx-page-count">1 / 1</span><button type="button" id="hx-next">Weiter ›</button></div><button type="button" class="hx-back" data-hx="home">‹ Zur Startseite</button></section>
-          <section class="hx-page" id="hx-gallery" hidden><h1>Meine Medien</h1><div id="hx-gallery-slot"></div><button type="button" class="hx-back" data-hx="home">‹ Zur Startseite</button></section>
+          <section class="hx-page" id="hx-gallery" hidden><h1>Meine Medien</h1><div id="hx-gallery-slot"></div><div class="hx-pages" id="hx-gallery-pages"><button type="button" id="hx-gallery-prev">‹ Zurück</button><span id="hx-gallery-count" aria-live="polite">1 / 1</span><button type="button" id="hx-gallery-next">Weiter ›</button></div><button type="button" class="hx-back" data-hx="home">‹ Zur Startseite</button></section>
         </div>
         <aside class="hx-sidebar hx-right" id="hx-right" hidden><h2>Video-Studio</h2><p>Videomodelle und Projekte</p><button type="button" data-hx="project">Video öffnen</button><button type="button" data-hx="models">Modelle suchen</button></aside>
       </div>
@@ -216,6 +216,7 @@ body>.bottom,body>.offline{display:none!important}
     document.getElementById('offline-dialog').addEventListener('click',()=>document.getElementById('prompt').focus());
     document.getElementById('offline-voice').addEventListener('click',()=>{hxNavigate('voice');document.getElementById('local-audio-text').value=document.getElementById('prompt').value;});
     ['open-termux','pick-photo','pick-video','save-video'].forEach(id=>document.getElementById(id).addEventListener('click',()=>location.href='helix://'+id));
+    let hxGalleryPage = 0;
     function galleryItems() {
       try {
         const stored = JSON.parse(localStorage.getItem('helix_gallery') || '[]');
@@ -239,6 +240,11 @@ body>.bottom,body>.offline{display:none!important}
       const grid = document.getElementById('gallery-grid');
       grid.replaceChildren();
       const items = galleryItems();
+      const totalPages = Math.max(1, Math.ceil(items.length / 4));
+      hxGalleryPage = Math.max(0, Math.min(hxGalleryPage, totalPages - 1));
+      document.getElementById('hx-gallery-count').textContent = (hxGalleryPage + 1) + ' / ' + totalPages;
+      document.getElementById('hx-gallery-prev').disabled = hxGalleryPage === 0;
+      document.getElementById('hx-gallery-next').disabled = hxGalleryPage >= totalPages - 1;
       if (!items.length) {
         const empty = document.createElement('div');
         empty.className = 'gallery-empty';
@@ -246,7 +252,7 @@ body>.bottom,body>.offline{display:none!important}
         grid.appendChild(empty);
         return;
       }
-      items.forEach(item => {
+      items.slice(hxGalleryPage * 4, hxGalleryPage * 4 + 4).forEach(item => {
         const card = document.createElement('div');
         card.className = 'gallery-item';
         card.appendChild(galleryMedia(item));
@@ -265,9 +271,16 @@ body>.bottom,body>.offline{display:none!important}
       if (box) box.replaceChildren(galleryMedia(item));
       const items = galleryItems();
       items.unshift({ uri, name: name.slice(0, 150), type });
+      hxGalleryPage = 0;
       try { localStorage.setItem('helix_gallery', JSON.stringify(items.slice(0, 20))); } catch (_) {}
       renderGallery();
     };
+    document.getElementById('hx-gallery-prev').addEventListener('click', () => {
+      if (hxGalleryPage > 0) { hxGalleryPage--; renderGallery(); }
+    });
+    document.getElementById('hx-gallery-next').addEventListener('click', () => {
+      if ((hxGalleryPage + 1) * 4 < galleryItems().length) { hxGalleryPage++; renderGallery(); }
+    });
     document.getElementById('upload-gallery').addEventListener('click',()=>location.href='helix://pick-gallery');
     document.getElementById('speak-local').addEventListener('click',()=>{const text=document.getElementById('local-audio-text').value.trim();if(text)location.href='helix://speak?text='+encodeURIComponent(text)+'&lang='+document.getElementById('local-language').value;});
     document.getElementById('connect-baitbuddy').addEventListener('click',()=>{const endpoint=document.getElementById('baitbuddy-endpoint').value.trim();localStorage.setItem('baitbuddy_endpoint',endpoint);location.href='baitbuddy://connect?endpoint='+encodeURIComponent(endpoint);});
