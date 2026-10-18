@@ -34,12 +34,86 @@ html{background:#061226}body{background-image:linear-gradient(180deg,rgba(2,8,27
 .bottom{background:rgba(4,13,34,.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .top,.section-head{position:relative}
 
+
+html,body{height:100%;overflow:hidden;max-width:100%}
+.app{max-width:none;width:100%;height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:calc(8px + env(safe-area-inset-top)) 12px calc(8px + env(safe-area-inset-bottom))}
+.app>.top{margin:0 0 8px;flex-shrink:0}.app>:not(.top):not(#helix-shell){display:none!important}
+body>.bottom,body>.offline{display:none!important}
+#helix-shell{display:flex;flex:1;flex-direction:column;min-height:0;overflow:hidden}
+.hx-head{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:8px;flex-shrink:0}
+.hx-head button{min-width:90px;min-height:44px;padding:8px;border:1px solid #53b5d0;border-radius:12px;background:#132b46ed;color:#eefbff;font-weight:800;font-size:12px}
+.hx-head strong{font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hx-layout{position:relative;display:flex;flex:1;min-height:0;overflow:hidden}
+.hx-center{flex:1;min-width:0;min-height:0;max-width:700px;margin:auto;overflow:hidden}
+.hx-page{height:100%;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:5px 2px}
+.hx-page[hidden],.hx-sidebar[hidden]{display:none!important}
+.hx-page h1{font-size:20px;margin:0}.hx-page>p{font-size:11px;color:#bdd1e2;line-height:1.35;margin:0}
+.hx-guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:0 0 auto}
+.hx-guide button{min-width:0;min-height:78px;padding:10px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;border:1px solid #4780a6;border-radius:14px;background:#0a2749e6;color:#f1faff}
+.hx-guide button span{font-size:18px;color:#b9f184}.hx-guide button strong{font-size:13px}.hx-guide button small{font-size:10px;color:#c4d4e6}
+.hx-assistant{flex:1;min-height:0;overflow:hidden;border:1px solid #557b9e;border-radius:15px;padding:12px;background:#0a203ce6}
+.hx-assistant>strong{font-size:13px;color:#b9f184}.hx-assistant>p{font-size:10px;line-height:1.3;color:#becddd;margin:6px 0}
+.hx-assistant .chat{margin:4px 0;padding:6px 0;border:0;background:transparent}.hx-assistant .chat-title{display:none}
+.hx-assistant .chat-log{max-height:44px;min-height:22px;overflow:hidden}.hx-assistant .prompt{min-height:42px;height:42px;resize:none}
+.hx-sidebar{position:absolute;z-index:5;top:0;bottom:0;width:min(76vw,240px);padding:15px;background:#071b35f6;border:1px solid #4a88bd;border-radius:14px}
+.hx-left{left:0}.hx-right{right:0}.hx-sidebar h2{font-size:17px;color:#b9f184;margin:0}.hx-sidebar p{font-size:12px;color:#c2d0e1}
+.hx-sidebar button,.hx-back,.hx-pages button{min-height:42px;border:1px solid #4c7196;border-radius:10px;background:#193654;color:#eff8ff;padding:9px;font-size:12px;font-weight:700}
+.hx-sidebar button{display:block;width:100%;margin:10px 0;text-align:left}.hx-back{flex-shrink:0;margin-top:auto}
+#hx-voice-slot,#hx-project-slot,#hx-models-slot,#hx-gallery-slot{min-height:0;overflow:hidden}
+#hx-voice-slot>.offline-step{margin:0;padding:11px;border:1px solid #4a6b8a;border-radius:12px;background:#10243fdd}
+#hx-voice-slot>.offline-step h3{margin:0 0 8px}
+#hx-voice-slot textarea{max-height:24dvh;resize:none}
+#hx-project-slot .detail{margin:0;padding:12px;overflow:hidden}
+#hx-project-slot .detail h3{margin:6px 0;font-size:18px}#hx-project-slot .detail p{margin:0 0 5px}
+#hx-project-slot .detail-top,#hx-project-slot .tags,#hx-project-slot .fine{display:none}
+#hx-project-slot .prompt{min-height:55px;max-height:16dvh;resize:none}
+#hx-project-slot .options{margin:6px 0}#hx-project-slot .primary{padding:9px}
+#hx-models-slot .section-head{display:none}
+#hx-models-slot .filters{flex-wrap:wrap;overflow:hidden;gap:4px;margin:0 0 7px}
+#hx-models-slot .filter{flex:1 1 auto;padding:8px;font-size:11px}
+#hx-models-slot .load-more{margin:0 0 7px;padding:10px}
+#hx-models-slot .list{display:grid;gap:7px;grid-template-columns:1fr}
+#hx-models-slot .card{min-height:55px;padding:7px;gap:9px}
+#hx-models-slot .art{flex-basis:43px;height:43px;font-size:21px}
+#hx-models-slot .card strong{font-size:13px}#hx-models-slot .card small{font-size:10px;margin-top:3px}
+.hx-pages{display:flex;justify-content:space-between;align-items:center;gap:9px;margin-top:auto}
+.hx-pages button{min-width:90px}.hx-pages button:disabled{opacity:.4}.hx-pages span{font-size:11px;color:#c4d5e6}
+#hx-gallery-slot>.gallery{padding:12px;margin:0}#hx-gallery-slot>.gallery h2,#hx-gallery-slot>.gallery p{display:none}
+#hx-gallery-slot>.gallery .gallery-grid{margin:8px 0}
+#hx-gallery-slot>.gallery .gallery-item:nth-child(n+5){display:none}
+#hx-gallery-slot>.gallery .gallery-item img,#hx-gallery-slot>.gallery .gallery-item video{height:45px}
+#hx-gallery-slot>#picked-media{display:none}
+@media(max-height:690px){.hx-page{gap:5px}.hx-guide button{min-height:64px;padding:7px}.hx-assistant{padding:8px}.hx-assistant>p{display:none}.hx-assistant .chat-log{max-height:28px}}
+
 </style>
 </head>
 <body>
   <main class="app">
     <header class="top"><div class="brand"><span class="mark">✳</span> HELIX</div><div class="top-actions"><span class="version">V 1.1</span><a class="icon-button" href="helix://settings" aria-label="Server-Einstellungen" style="display:grid;place-items:center">⚙</a></div></header>
-    <section class="hero" aria-labelledby="hero-title"><div class="eyebrow"><span class="dot"></span> DEIN KREATIV-STUDIO</div><h1 id="hero-title">Deine Idee.<br><em>Dein Modell.</em></h1><p>Wähle Video oder Stimme und starte mit einem öffentlichen Hugging-Face-Modell.</p><div class="hero-stats"><span>✦ 4 Modelle</span><span>◈ Video &amp; Voice</span><span>○ Werbefrei</span></div></section>
+
+
+    <section id="helix-shell" aria-label="Helix Arbeitsoberfläche">
+      <div class="hx-head"><button type="button" id="hx-left-btn" aria-expanded="false" aria-controls="hx-left">◖ Voice</button><strong id="hx-title">Startseite</strong><button type="button" id="hx-right-btn" aria-expanded="false" aria-controls="hx-right">Video ▣</button></div>
+      <div class="hx-layout">
+        <aside class="hx-sidebar hx-left" id="hx-left" hidden><h2>Voice-Studio</h2><p>Deutsch und lokal</p><button type="button" data-hx="voice">Stimme anhören</button><button type="button" data-hx="home">Wegweiser</button></aside>
+        <div class="hx-center">
+          <section class="hx-page" id="hx-home"><h1>Wohin möchtest du?</h1><p>Tippe auf einen Bereich, um seine Seite zu öffnen.</p>
+            <div class="hx-guide">
+              <button type="button" data-hx="voice"><span>◖</span><strong>Voice</strong><small>Deutsch · Handy-Stimme</small></button>
+              <button type="button" data-hx="project"><span>▣</span><strong>Video</strong><small>Modell und Projekt</small></button>
+              <button type="button" data-hx="models"><span>✦</span><strong>Modelle</strong><small>Neue Modelle suchen</small></button>
+              <button type="button" data-hx="gallery"><span>▤</span><strong>Galerie</strong><small>Bilder und Videos</small></button>
+            </div>
+            <div class="hx-assistant"><strong>✦ Projekt-Assistent</strong><p>Schreibe deine Idee. Der Chat übernimmt sie als Projekt-Prompt; ChatGPT ist noch nicht angebunden.</p><div id="hx-chat-slot"></div></div>
+          </section>
+          <section class="hx-page" id="hx-voice" hidden><h1>Voice-Studio</h1><p>Deutsche Android-Stimme. Offline nur mit installierten Sprachdaten.</p><div id="hx-voice-slot"></div><button type="button" class="hx-back" data-hx="home">‹ Zur Startseite</button></section>
+          <section class="hx-page" id="hx-project" hidden><h1>Video und Projekt</h1><p>Modell auswählen und Projekt vorbereiten.</p><div id="hx-project-slot"></div><button type="button" class="hx-back" data-hx="models">‹ Zu den Modellen</button></section>
+          <section class="hx-page" id="hx-models" hidden><h1>Modelle entdecken</h1><p>Öffentliche Modelle suchen; Ausführung kann Einschränkungen haben.</p><div id="hx-models-slot"></div><div class="hx-pages"><button type="button" id="hx-prev">‹ Zurück</button><span id="hx-page-count">1 / 1</span><button type="button" id="hx-next">Weiter ›</button></div><button type="button" class="hx-back" data-hx="home">‹ Zur Startseite</button></section>
+          <section class="hx-page" id="hx-gallery" hidden><h1>Meine Medien</h1><div id="hx-gallery-slot"></div><button type="button" class="hx-back" data-hx="home">‹ Zur Startseite</button></section>
+        </div>
+        <aside class="hx-sidebar hx-right" id="hx-right" hidden><h2>Video-Studio</h2><p>Videomodelle und Projekte</p><button type="button" data-hx="project">Video öffnen</button><button type="button" data-hx="models">Modelle suchen</button></aside>
+      </div>
+    </section>
     <div class="notice" id="offline" role="status">Der Helix-Server ist noch nicht erreichbar. Die Modellauswahl unten funktioniert trotzdem. <button type="button" onclick="location.href='helix://settings'">Adresse prüfen</button></div>
     <div class="section-head"><div><h2>Was möchtest du machen?</h2><p>Modell auswählen und direkt öffnen.</p></div><span class="count" id="count">4 Modelle</span></div>
     <div class="filters" aria-label="Modelle filtern"><button class="filter" type="button" data-filter="all" aria-pressed="true">Alle</button><button class="filter" type="button" data-filter="video" aria-pressed="false">▣ &nbsp;Video</button><button class="filter" type="button" data-filter="voice" aria-pressed="false">◖ &nbsp;Stimme</button></div><button class="load-more" id="load-more" type="button">＋ Neue Modelle suchen</button>
@@ -66,12 +140,15 @@ html{background:#061226}body{background-image:linear-gradient(180deg,rgba(2,8,27
       {id:'animate',kind:'video',symbol:'◈',art:'video',name:'AnimateDiff',sub:'Video · Bewegung aus Bild',description:'Bringe ein Bild mit Bewegung und kurzen Animationen zum Leben.',tags:['Bild zu Video','Animation'],url:'https://huggingface.co/spaces/ByteDance/AnimateDiff-Lightning'}
     ];
     let moreLoaded=false;
-    let filter='all',selected='ltx';
+    let filter='all',selected='ltx',hxModelPage=0;
     const list=document.getElementById('list');
     function render(){
       const visible=models.filter(m=>filter==='all'||m.kind===filter);
       document.getElementById('count').textContent=visible.length+' Modelle';
-      list.innerHTML=visible.map(m=>`<button type="button" class="card" data-id="${m.id}" aria-pressed="${selected===m.id}"><span class="art ${m.art}" aria-hidden="true">${m.symbol}</span><span class="card-main"><span class="kind">${m.kind==='video'?'VIDEO':'STIMME'}</span><strong>${m.name}</strong><small>${m.sub}</small></span><span class="check" aria-hidden="true">✓</span></button>`).join('');
+      const pageTotal=Math.max(1,Math.ceil(visible.length/3));hxModelPage=Math.min(hxModelPage,pageTotal-1);
+      document.getElementById('hx-page-count').textContent=(hxModelPage+1)+' / '+pageTotal;
+      document.getElementById('hx-prev').disabled=hxModelPage===0;document.getElementById('hx-next').disabled=hxModelPage>=pageTotal-1;
+      list.innerHTML=visible.slice(hxModelPage*3,(hxModelPage+1)*3).map(m=>`<button type="button" class="card" data-id="${m.id}" aria-pressed="${selected===m.id}"><span class="art ${m.art}" aria-hidden="true">${m.symbol}</span><span class="card-main"><span class="kind">${m.kind==='video'?'VIDEO':'STIMME'}</span><strong>${m.name}</strong><small>${m.sub}</small></span><span class="check" aria-hidden="true">✓</span></button>`).join('');
       list.querySelectorAll('.card').forEach(button=>button.addEventListener('click',()=>{selected=button.dataset.id;render();}));
       const model=models.find(m=>m.id===selected);
       document.getElementById('detail-name').textContent=model.name;
@@ -81,7 +158,7 @@ html{background:#061226}body{background-image:linear-gradient(180deg,rgba(2,8,27
       document.getElementById('video-options').hidden=model.kind!=='video';
       document.getElementById('voice-options').hidden=model.kind!=='voice';
     }
-    document.querySelectorAll('.filter').forEach(button=>button.addEventListener('click',()=>{filter=button.dataset.filter;document.querySelectorAll('.filter').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));if(filter!=='all'&&!models.find(m=>m.id===selected&&m.kind===filter))selected=(models.find(m=>m.kind===filter)||models[0]).id;render();}));
+    document.querySelectorAll('.filter').forEach(button=>button.addEventListener('click',()=>{filter=button.dataset.filter;hxModelPage=0;document.querySelectorAll('.filter').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));if(filter!=='all'&&!models.find(m=>m.id===selected&&m.kind===filter))selected=(models.find(m=>m.kind===filter)||models[0]).id;render();}));
     window.helixDiscoverIndex=0;
     try { const cache=JSON.parse(localStorage.getItem('helix_discovered_models')||'[]'); if(Array.isArray(cache)) models.push(...cache.filter(m=>m&&typeof m.id==='string'&&m.id.startsWith('hf:')&&typeof m.url==='string'&&m.url.startsWith('https://huggingface.co/')).slice(-100)); } catch(e) {}
     document.getElementById('load-more').addEventListener('click',async()=>{
@@ -128,6 +205,46 @@ html{background:#061226}body{background-image:linear-gradient(180deg,rgba(2,8,27
     document.querySelectorAll('[data-hardware]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-hardware]').forEach(item=>item.classList.toggle('active',item===button));localStorage.setItem('helix_hardware',button.dataset.hardware);}));
     if(new URLSearchParams(location.search).has('offline'))document.getElementById('offline').classList.add('visible');
     render();renderGallery();
+
+    // Rehome existing wired components: all original event listeners continue to work.
+    document.getElementById('hx-chat-slot').appendChild(document.querySelector('#detail .chat'));
+    document.getElementById('hx-project-slot').appendChild(document.getElementById('detail'));
+    document.getElementById('hx-voice-slot').appendChild(document.getElementById('local-audio-text').closest('.offline-step'));
+    document.getElementById('local-language').innerHTML='<option value="de">Deutsch</option>';
+    const modelSlot=document.getElementById('hx-models-slot');
+    ['.section-head','.filters','#load-more','#list'].forEach(selector=>{
+      const element=document.querySelector('.app > '+selector);
+      if(element)modelSlot.appendChild(element);
+    });
+    const gallerySlot=document.getElementById('hx-gallery-slot');
+    gallerySlot.appendChild(document.querySelector('.app > .gallery'));
+    gallerySlot.appendChild(document.getElementById('picked-media'));
+    function hxCloseSides(){
+      for(const side of ['left','right']){
+        document.getElementById('hx-'+side).hidden=true;
+        document.getElementById('hx-'+side+'-btn').setAttribute('aria-expanded','false');
+      }
+    }
+    function hxNavigate(page){
+      if(!['home','voice','project','models','gallery'].includes(page))return;
+      for(const name of ['home','voice','project','models','gallery'])document.getElementById('hx-'+name).hidden=name!==page;
+      document.getElementById('hx-title').textContent={home:'Startseite',voice:'Voice',project:'Video',models:'Modelle',gallery:'Galerie'}[page];
+      hxCloseSides();
+    }
+    document.querySelectorAll('[data-hx]').forEach(button=>button.addEventListener('click',()=>hxNavigate(button.dataset.hx)));
+    for(const side of ['left','right'])document.getElementById('hx-'+side+'-btn').addEventListener('click',()=>{
+      const element=document.getElementById('hx-'+side),show=element.hidden;
+      hxCloseSides();element.hidden=!show;
+      document.getElementById('hx-'+side+'-btn').setAttribute('aria-expanded',String(show));
+    });
+    document.getElementById('hx-prev').addEventListener('click',()=>{if(hxModelPage>0){hxModelPage--;render();}});
+    document.getElementById('hx-next').addEventListener('click',()=>{
+      const total=models.filter(m=>filter==='all'||m.kind===filter).length;
+      if((hxModelPage+1)*3<total){hxModelPage++;render();}
+    });
+    list.addEventListener('click',event=>{if(event.target.closest('.card'))hxNavigate('project');});
+    hxNavigate('home');
+
   </script>
 </body>
 </html>
