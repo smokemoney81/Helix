@@ -121,6 +121,16 @@
       return { type: 'discover' };
     }
 
+    // An exact model name overrides generic video and voice routing.
+    if (typeof models !== 'undefined' && Array.isArray(models)) {
+      const named = models.find(m => m && m.name && cmd.includes(normalize(m.name)) && normalize(m.name).length >= 4);
+      if (named) return { type: 'model', id: named.id, name: named.name };
+    }
+    if (/\b(videomodell|videomodelle|filmmodelle|filmprojekt|videoprojekt)\b/.test(cmd)) {
+      return /\b(videomodell|videomodelle|filmmodelle)\b/.test(cmd)
+        ? { type: 'models', filter: 'video' }
+        : { type: 'page', page: 'project' };
+    }
     const mentionsModels = /\b(modell|modelle|modellen|modellubersicht|modellsuche)\b/.test(cmd);
     if (mentionsModels) {
       if (/\b(video|videos|film|filme)\b/.test(cmd)) return { type: 'models', filter: 'video' };
@@ -131,12 +141,6 @@
       return { type: 'page', page: 'voice' };
     if (/\b(video|videos|videostudio|film|filme|animation)\b/.test(cmd))
       return { type: 'page', page: 'project' };
-
-    // Match names of catalog models if the catalog has initialized.
-    if (typeof models !== 'undefined' && Array.isArray(models)) {
-      const named = models.find(m => m && m.name && cmd.includes(normalize(m.name)) && normalize(m.name).length >= 4);
-      if (named) return { type: 'model', id: named.id, name: named.name };
-    }
 
     return { type: 'idea', text };
   }
