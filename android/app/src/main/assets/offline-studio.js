@@ -59,8 +59,11 @@
   // A model can be chosen for the online project, but that is NOT an offline installation.
   const detail = document.getElementById('hx-model-detail');
   const safeUrl = model => {
-    const match = /^https:\/\/huggingface\.co\/([a-zA-Z0-9._-]+)\/([a-zA-Z0-9._-]+)(?:\/.*)?$/.exec(String(model?.url || ''));
-    return match ? 'https://huggingface.co/' + match[1] + '/' + match[2] + '/tree/main' : '';
+    const url = String(model?.url || '');
+    const space = /^https:\/\/huggingface\.co\/spaces\/([a-zA-Z0-9._-]+)\/([a-zA-Z0-9._-]+)$/.exec(url);
+    if (space) return url + '/tree/main';
+    const repo = /^https:\/\/huggingface\.co\/([a-zA-Z0-9._-]+)\/([a-zA-Z0-9._-]+)$/.exec(url);
+    return repo ? url + '/tree/main' : '';
   };
   window.helixModelSelected = function (model) {
     if (!model) return;
@@ -70,8 +73,8 @@
     detail.appendChild(name);
     const note = document.createElement('p');
     note.textContent = model.kind === 'local'
-      ? 'Textmodell: GGUF-Datei und llama.cpp-Kompatibilität überprüfen. Ein Download installiert das Modell nicht automatisch.'
-      : 'Online-Modell: Die Dateiseite erlaubt Downloads, aber Offline-Betrieb ist nur mit passender Android-Laufzeit und geeigneter Hardware möglich.';
+      ? 'Textmodell: nur geeignete GGUF-Dateien können mit llama.cpp laufen. Download und Modellwechsel sind getrennte Schritte.'
+      : 'Dateien dieses Modells ansehen. Bei Spaces sind dies oft Demo-Dateien statt Modellgewichte; Offline-Betrieb hängt von Format und Hardware ab.';
     detail.appendChild(note);
     const files = safeUrl(model);
     if (files) {
