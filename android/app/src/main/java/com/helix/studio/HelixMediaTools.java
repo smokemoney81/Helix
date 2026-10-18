@@ -9,6 +9,12 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.content.ContentValues;
+import android.content.ContentResolver;
+import android.provider.MediaStore;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.FileInputStream;
 import android.os.Handler;
 import android.os.Looper;
 import java.io.File;
@@ -70,7 +76,8 @@ final class HelixMediaTools {
         releaseRecorder();
         if (saved && recordingFile != null && recordingFile.exists() && recordingFile.length() > 0) {
             audio = Uri.fromFile(recordingFile);
-            report("Lokale Voice gespeichert und als Tonspur ausgewählt.", recordingFile.getAbsolutePath(), true);
+            String location = publishFile(recordingFile, "audio/mp4", false);
+            report("Voice gespeichert und als Tonspur ausgewählt.", location, true);
         } else {
             if (recordingFile != null) recordingFile.delete();
             report("Aufnahme fehlgeschlagen. Mindestens eine Sekunde aufnehmen.", null, false);
@@ -101,7 +108,8 @@ final class HelixMediaTools {
                 output = new File(folder, "helix-video-voice-" + System.currentTimeMillis() + ".mp4");
                 mux(v, a, output);
                 File saved = output;
-                report("MP4 mit neuer Tonspur gespeichert.", saved.getAbsolutePath(), true);
+                String publicLocation = publishFile(saved, "video/mp4", true);
+                report("MP4 mit neuer Tonspur exportiert.", publicLocation, true);
             } catch (Exception error) {
                 if (output != null) output.delete();
                 report("Export fehlgeschlagen. Benötigt MP4-Video und AAC/M4A-Audio. " + error.getClass().getSimpleName(), null, false);
@@ -173,6 +181,38 @@ final class HelixMediaTools {
             extractor.advance();
         }
     }
+    private String publishFile(File source, String mime, boolean videoType) {
+        if (Build.VERSION.SDK_INT < 29) return source.getAbsolutePath();
+        ContentResolver resolver = activity.getContentResolver();
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, source.getName());
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mime);
+        String folder = videoType ? Environment.DIRECTORY_MOVIES : Environment.DIRECTORY_MUSIC;
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, folder + "/Helix");
+        values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+        Uri item = null;
+        try {
+            Uri collection = videoType ? MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                                       : MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+            item = resolver.insert(collection, values);
+            if (item == null) throw new IllegalStateException("Cannot create media");
+            try (InputStream in = new FileInputStream(source);
+                 OutputStream out = resolver.openOutputStream(item)) {
+                if (out == null) throw new IllegalStateException("Cannot write media");
+                byte[] bytes = new byte[65536];
+                int n;
+                while ((n = in.read(bytes)) != -1) out.write(bytes, 0, n);
+            }
+            values.clear();
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+            resolver.update(item, values, null, null);
+            return folder + "/Helix/" + source.getName();
+        } catch (Exception error) {
+            if (item != null) resolver.delete(item, null, null);
+            return source.getAbsolutePath();
+        }
+    }
+
     private void report(String status, String path, boolean success) {
         main.post(() -> callback.onStatus(status, path, success));
     }
