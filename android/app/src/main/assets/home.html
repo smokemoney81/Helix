@@ -216,8 +216,58 @@ body>.bottom,body>.offline{display:none!important}
     document.getElementById('offline-dialog').addEventListener('click',()=>document.getElementById('prompt').focus());
     document.getElementById('offline-voice').addEventListener('click',()=>{hxNavigate('voice');document.getElementById('local-audio-text').value=document.getElementById('prompt').value;});
     ['open-termux','pick-photo','pick-video','save-video'].forEach(id=>document.getElementById(id).addEventListener('click',()=>location.href='helix://'+id));
-    function renderGallery(){const items=JSON.parse(localStorage.getItem('helix_gallery')||'[]');const grid=document.getElementById('gallery-grid');grid.innerHTML=items.length?items.map(item=>`<div class="gallery-item">${item.type.startsWith('image/')?`<img src="${item.uri}" alt="${item.name}">`:`<video controls src="${item.uri}"></video>`}<div>${item.name}</div></div>`).join(''):'<div class="gallery-empty">Noch keine Dateien. Lade dein erstes Video oder Bild hoch.</div>';}
-    window.showPickedMedia=(uri,name,type)=>{const box=document.getElementById('picked-media');if(box)box.innerHTML=type.startsWith('image/')?`<img src="${uri}" alt="${name}" style="max-width:100%;max-height:180px;border-radius:10px">`:`<video controls src="${uri}" style="max-width:100%;max-height:180px;border-radius:10px"></video>`;const items=JSON.parse(localStorage.getItem('helix_gallery')||'[]');items.unshift({uri,name,type});localStorage.setItem('helix_gallery',JSON.stringify(items.slice(0,20)));renderGallery();};
+    function galleryItems() {
+      try {
+        const stored = JSON.parse(localStorage.getItem('helix_gallery') || '[]');
+        if (!Array.isArray(stored)) return [];
+        return stored.filter(item => item && typeof item.uri === 'string'
+          && /^content:\/\//i.test(item.uri) && item.uri.length < 2500
+          && typeof item.name === 'string' && typeof item.type === 'string'
+          && /^(image|video|audio)\//.test(item.type)).slice(0, 20);
+      } catch (_) { return []; }
+    }
+    function galleryMedia(item) {
+      const kind = item.type.startsWith('image/') ? 'img'
+        : item.type.startsWith('audio/') ? 'audio' : 'video';
+      const media = document.createElement(kind);
+      media.src = item.uri;
+      if (kind === 'img') media.alt = item.name;
+      else { media.controls = true; media.preload = 'metadata'; }
+      return media;
+    }
+    function renderGallery() {
+      const grid = document.getElementById('gallery-grid');
+      grid.replaceChildren();
+      const items = galleryItems();
+      if (!items.length) {
+        const empty = document.createElement('div');
+        empty.className = 'gallery-empty';
+        empty.textContent = 'Noch keine Dateien. Lade dein erstes Video oder Bild hoch.';
+        grid.appendChild(empty);
+        return;
+      }
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'gallery-item';
+        card.appendChild(galleryMedia(item));
+        const caption = document.createElement('div');
+        caption.textContent = item.name;
+        card.appendChild(caption);
+        grid.appendChild(card);
+      });
+    }
+    window.showPickedMedia = (uri, name, type) => {
+      const item = { uri, name, type };
+      if (typeof uri !== 'string' || !/^content:\/\//i.test(uri)
+          || typeof name !== 'string' || typeof type !== 'string'
+          || !/^(image|video|audio)\//.test(type)) return;
+      const box = document.getElementById('picked-media');
+      if (box) box.replaceChildren(galleryMedia(item));
+      const items = galleryItems();
+      items.unshift({ uri, name: name.slice(0, 150), type });
+      try { localStorage.setItem('helix_gallery', JSON.stringify(items.slice(0, 20))); } catch (_) {}
+      renderGallery();
+    };
     document.getElementById('upload-gallery').addEventListener('click',()=>location.href='helix://pick-gallery');
     document.getElementById('speak-local').addEventListener('click',()=>{const text=document.getElementById('local-audio-text').value.trim();if(text)location.href='helix://speak?text='+encodeURIComponent(text)+'&lang='+document.getElementById('local-language').value;});
     document.getElementById('connect-baitbuddy').addEventListener('click',()=>{const endpoint=document.getElementById('baitbuddy-endpoint').value.trim();localStorage.setItem('baitbuddy_endpoint',endpoint);location.href='baitbuddy://connect?endpoint='+encodeURIComponent(endpoint);});
