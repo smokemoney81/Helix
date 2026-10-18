@@ -21,7 +21,20 @@
     .cloud{margin-top:27px;padding:21px;border:1px solid #4d596e;border-radius:21px;background:linear-gradient(145deg,#1d2c45,#152136)}.cloud h2{font-size:21px;margin:0 0 7px}.cloud p{color:#aebdd1;font-size:12px;line-height:1.55}.hardware-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:15px 0}.hardware{border:1px solid #4a5b75;border-radius:11px;background:#101b2d;color:#dce7f4;padding:12px 8px;font-size:11px;font-weight:800}.hardware.active{border-color:#b9f184;background:#29433d;color:#b9f184}.cloud-link{display:block;text-align:center;border-radius:11px;background:#b9f184;color:#14231d;padding:13px;font-size:11px;font-weight:800}
     .gallery{margin:27px 20px 22px;padding:21px;border:1px solid #4d596e;border-radius:21px;background:#17243a}.gallery h2{font-size:21px;margin:0 0 7px}.gallery p{color:#aebdd1;font-size:12px;line-height:1.5}.gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:15px 0}.gallery-item{min-height:90px;border:1px solid #4b5c75;border-radius:11px;background:#0f1b2e;padding:10px;color:#dbe7f4;font-size:10px;overflow:hidden}.gallery-item img,.gallery-item video{width:100%;height:70px;object-fit:cover;border-radius:7px;margin-bottom:6px}.gallery-empty{grid-column:1/-1;color:#899bb3;font-size:11px;padding:18px;text-align:center;border:1px dashed #4b5c75;border-radius:10px}.upload-btn{width:100%;border:0;border-radius:11px;background:#b9f184;color:#14231d;padding:13px;font-size:11px;font-weight:800}
     @media(min-width:600px){.hero h1{font-size:49px}.hero{padding:34px}.list{grid-template-columns:1fr 1fr}.card{min-height:120px}.detail{padding:28px}}
-  </style>
+  
+/* Global Helix artwork, 2026-10-18 */
+
+html{background:#061226}body{background-image:linear-gradient(180deg,rgba(2,8,27,.40),rgba(1,10,30,.60)),url('helix-background.webp')!important;background-position:center center!important;background-size:cover!important;background-repeat:no-repeat!important;background-attachment:fixed!important;min-height:100vh}
+.hero{background:linear-gradient(135deg,rgba(3,13,36,.80),rgba(4,28,57,.58));border-color:rgba(93,214,246,.5)}
+.hero:after{color:rgba(100,242,255,.18)}
+.card{background:rgba(11,25,48,.88);border-color:rgba(91,166,219,.34)}
+.card[aria-pressed=true]{background:rgba(23,53,76,.94)}
+.detail,.offline,.cloud,.gallery{background:rgba(10,24,48,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.chat,.prompt,.options select,.offline select,.offline input{background-color:rgba(5,18,37,.88)}
+.bottom{background:rgba(4,13,34,.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.top,.section-head{position:relative}
+
+</style>
 </head>
 <body>
   <main class="app">
