@@ -66,8 +66,11 @@
     return repo ? url + '/tree/main' : '';
   };
   window.helixModelSelected = function (model) {
-    if (!model) return;
     detail.replaceChildren();
+    if (!model) {
+      detail.textContent = 'Noch kein Modell in dieser Kategorie gefunden. Bitte weitere suchen oder den Filter ändern.';
+      return;
+    }
     const name = document.createElement('strong');
     name.textContent = 'Ausgewählt: ' + model.name;
     detail.appendChild(name);
