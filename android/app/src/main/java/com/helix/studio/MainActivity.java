@@ -200,7 +200,9 @@ public final class MainActivity extends Activity {
                         try { Intent termux = new Intent(Intent.ACTION_VIEW, Uri.parse("termux://home")); termux.setPackage("com.termux"); startActivity(termux); }
                         catch (Exception ignored) { Toast.makeText(MainActivity.this, "Termux ist nicht installiert.", Toast.LENGTH_LONG).show(); }
                     } else if ("pick-photo".equals(target.getHost()) || "pick-video".equals(target.getHost())) {
-                        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("pick-photo".equals(target.getHost()) ? "image/*" : "video/*"); startActivityForResult(picker, 41);
+                        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("pick-photo".equals(target.getHost()) ? "image/*" : "video/*"); startActivityForResult(picker, "pick-photo".equals(target.getHost()) ? 43 : 41);
+                    } else if ("pick-model".equals(target.getHost())) {
+                        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("application/octet-stream"); startActivityForResult(picker, 42);
                     } else if ("save-video".equals(target.getHost())) Toast.makeText(MainActivity.this, "Lokales Video kann nach der Auswahl gespeichert werden.", Toast.LENGTH_LONG).show();
                     else if ("speak".equals(target.getHost())) { String text = target.getQueryParameter("text"); String lang = target.getQueryParameter("lang"); if (tts != null && text != null) { tts.setLanguage("en".equals(lang) ? java.util.Locale.ENGLISH : "fr".equals(lang) ? java.util.Locale.FRENCH : java.util.Locale.GERMAN); tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "helix-local"); Toast.makeText(MainActivity.this, "Lokales Audio wird abgespielt.", Toast.LENGTH_SHORT).show(); } }
                     return true;
@@ -220,6 +222,15 @@ public final class MainActivity extends Activity {
         if (homeVisible) super.onBackPressed();
         else if (web != null && web.canGoBack()) web.goBack();
         else showHome(false);
+    }
+
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK || data == null || data.getData() == null || web == null) return;
+        Uri uri = data.getData();
+        String name = uri.getLastPathSegment() == null ? "Datei ausgewählt" : uri.getLastPathSegment();
+        if (requestCode == 42) web.evaluateJavascript("document.getElementById('local-model').innerHTML='<option>" + name.replace("'", "") + "</option>'", null);
+        else web.evaluateJavascript("window.showPickedMedia && window.showPickedMedia('" + uri.toString().replace("'", "%27") + "','" + name.replace("'", "") + "','" + (requestCode == 43 ? "image/*" : "video/*") + "')", null);
     }
 
     @Override protected void onDestroy() {
