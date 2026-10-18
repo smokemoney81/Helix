@@ -160,6 +160,32 @@ final class HelixLocalChatClient {
         activity.runOnUiThread(() -> callback.onResult(requestId, answer, error));
     }
 
+    /** Show only the actually running GGUF model. No model is silently swapped. */
+    void getActiveModel(java.util.function.BiConsumer<String, String> callback) {
+        executor.execute(() -> {
+            HttpURLConnection connection = null;
+            String id = null, error = null;
+            try {
+                connection = (HttpURLConnection) new URL(LOOPBACK + "/v1/models").openConnection();
+                connection.setInstanceFollowRedirects(false);
+                connection.setConnectTimeout(2500);
+                connection.setReadTimeout(4000);
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK)
+                    throw new IllegalStateException("HTTP");
+                JSONArray items = new JSONObject(readLimited(connection.getInputStream())).optJSONArray("data");
+                if (items == null || items.length() == 0) throw new IllegalStateException("Keine Modelle");
+                id = items.getJSONObject(0).optString("id", "");
+                if (id.length() > 200) id = id.substring(0, 200);
+            } catch (Exception e) {
+                error = "Starte llama-server in Termux auf Port 8080.";
+            } finally {
+                if (connection != null) connection.disconnect();
+            }
+            final String modelName = id, message = error;
+            activity.runOnUiThread(() -> callback.accept(modelName, message));
+        });
+    }
+
     void destroy() {
         executor.shutdownNow();
     }
