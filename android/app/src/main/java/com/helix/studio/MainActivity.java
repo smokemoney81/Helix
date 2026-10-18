@@ -442,13 +442,15 @@ public final class MainActivity extends Activity {
             return;
         }
         String name = uri.getLastPathSegment() == null ? "Datei ausgewählt" : uri.getLastPathSegment();
-        // Never interpolate document-provider names or URIs into executable JavaScript.
+        try (android.database.Cursor cursor = getContentResolver().query(uri,
+                new String[]{android.provider.OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst() && !cursor.isNull(0))
+                name = cursor.getString(0);
+        } catch (Exception ignored) { }
+        // Provider-controlled filenames are JSON-quoted and inserted as text only.
         if (requestCode == 42) {
-            String script = "(function(){const select=document.getElementById('local-model');"
-                + "if(!select)return;const option=document.createElement('option');"
-                + "option.textContent=" + JSONObject.quote(name)
-                + ";select.replaceChildren(option);})()";
-            web.evaluateJavascript(script, null);
+            web.evaluateJavascript("window.helixPickedGGUF && window.helixPickedGGUF("
+                + JSONObject.quote(name) + ")", null);
             return;
         }
         if (requestCode != 41 && requestCode != 43 && requestCode != 44
