@@ -31,10 +31,11 @@
       <p>Sprachprobe anhören, Galerie prüfen oder Termux öffnen. Video-Generierung benötigt ein geeignetes separates Modell.</p>
       <button type="button" data-hx="voice">Deutsche Offline-Stimmen</button>
       <button type="button" data-hx="gallery">Galerie und Dateien</button>
-      <button type="button" id="hx-tool-termux">Termux starten</button>
+      <button type="button" id="hx-tool-termux">Termux starten</button><div id="hx-local-model-tools"></div>
     </div>
     <div id="hx-media-status" role="status" aria-live="polite">Noch kein Video und keine Voice ausgewählt.</div>
   `;
+  station.querySelectorAll('[data-hx]').forEach(button => button.addEventListener('click', () => hxNavigate(button.dataset.hx)));
   document.querySelectorAll('[data-tool]').forEach(button => button.addEventListener('click', function () {
     document.querySelectorAll('[data-tool]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
     for (const name of ['merge','record','convert']) document.getElementById('hx-tool-' + name).hidden = button.dataset.tool !== name;
