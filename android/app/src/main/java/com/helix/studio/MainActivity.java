@@ -203,6 +203,8 @@ public final class MainActivity extends Activity {
                         Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("pick-photo".equals(target.getHost()) ? "image/*" : "video/*"); startActivityForResult(picker, "pick-photo".equals(target.getHost()) ? 43 : 41);
                     } else if ("pick-model".equals(target.getHost())) {
                         Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("application/octet-stream"); startActivityForResult(picker, 42);
+                    } else if ("pick-gallery".equals(target.getHost())) {
+                        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("*/*"); picker.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"}); startActivityForResult(picker, 44);
                     } else if ("save-video".equals(target.getHost())) Toast.makeText(MainActivity.this, "Lokales Video kann nach der Auswahl gespeichert werden.", Toast.LENGTH_LONG).show();
                     else if ("speak".equals(target.getHost())) { String text = target.getQueryParameter("text"); String lang = target.getQueryParameter("lang"); if (tts != null && text != null) { tts.setLanguage("en".equals(lang) ? java.util.Locale.ENGLISH : "fr".equals(lang) ? java.util.Locale.FRENCH : java.util.Locale.GERMAN); tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "helix-local"); Toast.makeText(MainActivity.this, "Lokales Audio wird abgespielt.", Toast.LENGTH_SHORT).show(); } }
                     return true;
@@ -230,7 +232,7 @@ public final class MainActivity extends Activity {
         Uri uri = data.getData();
         String name = uri.getLastPathSegment() == null ? "Datei ausgewählt" : uri.getLastPathSegment();
         if (requestCode == 42) web.evaluateJavascript("document.getElementById('local-model').innerHTML='<option>" + name.replace("'", "") + "</option>'", null);
-        else web.evaluateJavascript("window.showPickedMedia && window.showPickedMedia('" + uri.toString().replace("'", "%27") + "','" + name.replace("'", "") + "','" + (requestCode == 43 ? "image/*" : "video/*") + "')", null);
+        else web.evaluateJavascript("window.showPickedMedia && window.showPickedMedia('" + uri.toString().replace("'", "%27") + "','" + name.replace("'", "") + "','" + (requestCode == 43 || requestCode == 44 && getContentResolver().getType(uri) != null && getContentResolver().getType(uri).startsWith("image/") ? "image/*" : "video/*") + "')", null);
     }
 
     @Override protected void onDestroy() {
