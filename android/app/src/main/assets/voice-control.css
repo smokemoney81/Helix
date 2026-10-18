@@ -1,0 +1,8 @@
+/* Speech input remains reachable from each local Helix workspace panel. */
+.hx-commandbar{flex:0 0 auto;display:grid;grid-template-columns:45px minmax(0,1fr) 48px;grid-template-rows:44px auto;column-gap:7px;row-gap:4px;margin:0 0 8px;min-width:0}
+.hx-commandbar button{min-width:0;min-height:44px;border:1px solid #4d97be;border-radius:11px;background:#153451e8;color:#f1faff;font-size:13px;font-weight:800}
+.hx-commandbar button:disabled{opacity:.52}
+.hx-commandbar input{width:100%;min-width:0;min-height:44px;border:1px solid #527a9a;border-radius:11px;background:#0b213de6;color:#fff;padding:9px 10px;font:12px/1.2 sans-serif}
+.hx-commandbar input::placeholder{color:#aec4dc}
+#hx-voice-status{grid-column:1/-1;font-size:10px;line-height:1.2;color:#c7d8e6;min-height:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-height:660px){.hx-commandbar{grid-template-rows:40px auto;margin-bottom:5px}.hx-commandbar button,.hx-commandbar input{min-height:40px}}
