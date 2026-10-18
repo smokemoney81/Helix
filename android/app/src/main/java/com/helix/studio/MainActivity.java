@@ -43,6 +43,7 @@ public final class MainActivity extends Activity {
     private boolean ttsReady;
     private HelixVoiceController voiceController;
     private HelixCatalogClient catalogClient;
+    private HelixLocalChatClient localChatClient;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -69,6 +70,14 @@ public final class MainActivity extends Activity {
             String callbackScript = "window.helixCatalogResponse && window.helixCatalogResponse("
                 + JSONObject.quote(requestId) + ","
                 + JSONObject.quote(json == null ? "" : json) + ","
+                + (error == null ? "null" : JSONObject.quote(error)) + ")";
+            web.evaluateJavascript(callbackScript, null);
+        });
+        localChatClient = new HelixLocalChatClient(this, (requestId, answer, error) -> {
+            if (!homeVisible || web == null) return;
+            String callbackScript = "window.helixLocalChatResult && window.helixLocalChatResult("
+                + JSONObject.quote(requestId) + ","
+                + JSONObject.quote(answer == null ? "" : answer) + ","
                 + (error == null ? "null" : JSONObject.quote(error)) + ")";
             web.evaluateJavascript(callbackScript, null);
         });
@@ -244,6 +253,16 @@ public final class MainActivity extends Activity {
                             target.getQueryParameter("tag"),
                             target.getQueryParameter("offset"),
                             target.getQueryParameter("request"));
+                    } else if ("local-chat".equals(target.getHost())) {
+                        if (localChatClient != null) localChatClient.send(
+                            target.getQueryParameter("request"),
+                            target.getQueryParameter("messages"));
+                    } else if ("open-chatgpt".equals(target.getHost())) {
+                        try {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/")));
+                        } catch (Exception ignored) {
+                            Toast.makeText(MainActivity.this, "ChatGPT konnte nicht geöffnet werden.", Toast.LENGTH_LONG).show();
+                        }
                     } else if ("voice-listen".equals(target.getHost())) {
                         if (voiceController != null) voiceController.start();
                     } else if ("voice-list".equals(target.getHost())) {
@@ -370,6 +389,7 @@ public final class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        if (localChatClient != null) localChatClient.destroy();
         if (catalogClient != null) catalogClient.destroy();
         if (voiceController != null) voiceController.destroy();
         if (web != null) web.destroy();
