@@ -18,6 +18,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.speech.tts.TextToSpeech;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -35,6 +36,7 @@ public final class MainActivity extends Activity {
     private WebView web;
     private String serverUrl;
     private boolean homeVisible;
+    private TextToSpeech tts;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -42,6 +44,7 @@ public final class MainActivity extends Activity {
         getWindow().setNavigationBarColor(BACKGROUND);
         serverUrl = getPreferences(MODE_PRIVATE).getString(SERVER_KEY, null);
         if (serverUrl == null) serverUrl = isEmulator() ? EMULATOR_URL : SPACE_URL;
+        tts = new TextToSpeech(this, status -> { });
         showHome(false);
     }
 
@@ -194,6 +197,7 @@ public final class MainActivity extends Activity {
                     } else if ("pick-photo".equals(target.getHost()) || "pick-video".equals(target.getHost())) {
                         Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("pick-photo".equals(target.getHost()) ? "image/*" : "video/*"); startActivityForResult(picker, 41);
                     } else if ("save-video".equals(target.getHost())) Toast.makeText(MainActivity.this, "Lokales Video kann nach der Auswahl gespeichert werden.", Toast.LENGTH_LONG).show();
+                    else if ("speak".equals(target.getHost())) { String text = target.getQueryParameter("text"); String lang = target.getQueryParameter("lang"); if (tts != null && text != null) { tts.setLanguage("en".equals(lang) ? java.util.Locale.ENGLISH : "fr".equals(lang) ? java.util.Locale.FRENCH : java.util.Locale.GERMAN); tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "helix-local"); Toast.makeText(MainActivity.this, "Lokales Audio wird abgespielt.", Toast.LENGTH_SHORT).show(); } }
                     return true;
                 }
                 if ("https".equals(target.getScheme()) && "huggingface.co".equalsIgnoreCase(target.getHost())) {
@@ -215,6 +219,7 @@ public final class MainActivity extends Activity {
 
     @Override protected void onDestroy() {
         if (web != null) web.destroy();
+        if (tts != null) { tts.stop(); tts.shutdown(); }
         super.onDestroy();
     }
 }
