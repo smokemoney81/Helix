@@ -188,6 +188,12 @@ public final class MainActivity extends Activity {
                 if ("helix".equals(target.getScheme())) {
                     if ("studio".equals(target.getHost())) showStudio();
                     else if ("settings".equals(target.getHost())) showSetup(null);
+                    else if ("open-termux".equals(target.getHost())) {
+                        try { Intent termux = new Intent(Intent.ACTION_VIEW, Uri.parse("termux://home")); termux.setPackage("com.termux"); startActivity(termux); }
+                        catch (Exception ignored) { Toast.makeText(MainActivity.this, "Termux ist nicht installiert.", Toast.LENGTH_LONG).show(); }
+                    } else if ("pick-photo".equals(target.getHost()) || "pick-video".equals(target.getHost())) {
+                        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT); picker.addCategory(Intent.CATEGORY_OPENABLE); picker.setType("pick-photo".equals(target.getHost()) ? "image/*" : "video/*"); startActivityForResult(picker, 41);
+                    } else if ("save-video".equals(target.getHost())) Toast.makeText(MainActivity.this, "Lokales Video kann nach der Auswahl gespeichert werden.", Toast.LENGTH_LONG).show();
                     return true;
                 }
                 if ("https".equals(target.getScheme()) && "huggingface.co".equalsIgnoreCase(target.getHost())) {
