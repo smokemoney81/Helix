@@ -188,6 +188,11 @@ public final class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri target = request.getUrl();
+                if ("baitbuddy".equals(target.getScheme())) {
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, target)); }
+                    catch (Exception ignored) { Toast.makeText(MainActivity.this, "BaitBuddy konnte nicht geöffnet werden. Endpoint manuell eintragen.", Toast.LENGTH_LONG).show(); }
+                    return true;
+                }
                 if ("helix".equals(target.getScheme())) {
                     if ("studio".equals(target.getHost())) showStudio();
                     else if ("settings".equals(target.getHost())) showSetup(null);
