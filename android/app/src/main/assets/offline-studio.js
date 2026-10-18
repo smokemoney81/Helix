@@ -106,6 +106,8 @@
       <strong>Lokales Textmodell im Termux-Server</strong>
       <p>Der tatsächlich geladene Modellname kommt aus llama.cpp. Zum Wechsel muss der Server ein anderes GGUF laden.</p>
       <div id="hx-active-local-model" aria-live="polite">Noch nicht geprüft</div>
+      <button id="hx-choose-gguf" type="button">GGUF-Datei auswählen</button>
+      <div id="hx-picked-gguf" aria-live="polite">Keine lokale GGUF-Datei ausgewählt.</div>
       <button id="hx-check-local-model" type="button">Aktives Modell prüfen</button>
       <button id="hx-model-commands" type="button">Termux-Befehl zum Modellwechsel anzeigen</button>
       <pre id="hx-model-help" hidden>1. GGUF über „Dateien / Download“ von Hugging Face laden.
@@ -121,6 +123,26 @@
         ? 'Kein laufender Termux-Server: ' + error
         : 'Lokal aktiv: ' + (name || 'Modellname unbekannt');
     };
+    const picked = document.getElementById('hx-picked-gguf');
+    window.helixPickedGGUF = function(name) {
+      const file = String(name || '').trim();
+      if (!/^[a-zA-Z0-9._-]+\\.gguf$/i.test(file) || file.length > 130 || file.includes('..')) {
+        picked.textContent = 'Nur sichere GGUF-Dateinamen werden unterstützt.';
+        return;
+      }
+      localStorage.setItem('helix_selected_gguf', file);
+      picked.textContent = 'Ausgewählt: ' + file + ' (noch nicht in Termux geladen)';
+      const help = document.getElementById('hx-model-help');
+      help.textContent = 'Datei in Termux nach ~/models kopieren. Dann bisherigen Server beenden und neu starten:\\n' +
+        '~/llama.cpp/build/bin/llama-server -m ~/models/' + file + ' --host 127.0.0.1 --port 8080';
+    };
+    try {
+      const saved = localStorage.getItem('helix_selected_gguf');
+      if (saved) window.helixPickedGGUF(saved);
+    } catch (_) { /* persistence unavailable */ }
+    document.getElementById('hx-choose-gguf').addEventListener('click', () => {
+      location.href = 'helix://pick-model';
+    });
     document.getElementById('hx-check-local-model').addEventListener('click', () => {
       document.getElementById('hx-active-local-model').textContent = 'Prüfe 127.0.0.1:8080 …';
       location.href = 'helix://model-info';
