@@ -6,3 +6,16 @@
 .hx-commandbar input::placeholder{color:#aec4dc}
 #hx-voice-status{grid-column:1/-1;font-size:10px;line-height:1.2;color:#c7d8e6;min-height:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-height:660px){.hx-commandbar{grid-template-rows:40px auto;margin-bottom:5px}.hx-commandbar button,.hx-commandbar input{min-height:40px}}
+
+/* Shared German offline voice selectors in Home and Voice-Studio. */
+.hx-voice-prefs{display:flex;align-items:center;gap:8px;min-height:42px;flex-shrink:0;border:1px solid #537998;border-radius:12px;background:#0b2340e6;padding:6px 8px}
+.hx-voice-prefs label{flex:0 0 auto;color:#d2e4ee;font-size:10px;font-weight:700}
+.hx-voice-prefs select{flex:1;min-width:0}
+.hx-studio-voices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:11px;background:#0b2340e8;border:1px solid #567b9f;border-radius:13px;margin-bottom:8px}
+.hx-studio-voices label{grid-column:1/-1;color:#d2e4ee;font-size:11px;font-weight:750}
+.hx-studio-voices select{grid-column:1/-1}
+.hx-voice-prefs select,.hx-studio-voices select{height:38px;border:1px solid #557d9e;border-radius:9px;background:#102841;color:#fff;padding:7px;font-size:11px}
+.hx-voice-prefs select:disabled,.hx-studio-voices select:disabled{opacity:.65}
+.hx-studio-voices button{min-width:0;min-height:40px;border:1px solid #4d819d;border-radius:9px;background:#193956;color:#eff9ff;padding:8px 5px;font-size:11px;font-weight:700}
+.hx-studio-voices button:disabled{opacity:.52}
+@media(max-height:680px){.hx-voice-prefs{min-height:36px;padding:4px}.hx-voice-prefs select{height:30px}.hx-voice-prefs label{font-size:9px}.hx-studio-voices{gap:5px;padding:8px}}
