@@ -113,3 +113,7 @@ Ergebnisse der realen Prüfung: siehe [VERIFICATION.md](VERIFICATION.md).
 - Schrift: Inter von Rasmus Andersson, SIL Open Font License, siehe `static/OFL.txt`.
 - SVG-Symbole und Wellenformen sind direkt im Projekt implementiert.
 - Modelllizenzen und Nutzungsbedingungen auf der jeweiligen Modell-/Space-Seite prüfen.
+
+## Animierte Referenzoberfläche
+
+Die nach der mobilen Bildvorlage gestaltete HELIX-Vorschau liegt unter [previews/helix](previews/helix/README.md). Sie enthält die sanft kreisende Lichtspirale mit abgestimmter Bodenreflexion, das mobile Layout und eine eigenständige [HTML-Vorschau](previews/helix/standalone.html) zum Herunterladen. Dieser Prototyp besitzt noch keine Verbindung zu den Modelldiensten des Studios.
