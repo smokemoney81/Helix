@@ -45,6 +45,7 @@ public final class MainActivity extends Activity {
     private HelixCatalogClient catalogClient;
     private HelixLocalChatClient localChatClient;
     private HelixMediaTools mediaTools;
+    private String pendingTextExport;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -127,7 +128,20 @@ public final class MainActivity extends Activity {
                 Uri target = request.getUrl();
                 if (!"helix".equals(target.getScheme())) return true;
                 if ("home".equals(target.getHost())) showHome(false);
-                else if ("studio".equals(target.getHost())) showStudio();
+                else if ("export-text".equals(target.getHost())) {
+                        String text = target.getQueryParameter("text");
+                        String kind = target.getQueryParameter("kind");
+                        if (text == null || text.length() > 100000 || pendingTextExport != null) {
+                            Toast.makeText(MainActivity.this, "Export nicht möglich: Text zu groß oder Export läuft bereits.", Toast.LENGTH_LONG).show();
+                            return true;
+                        }
+                        pendingTextExport = text;
+                        Intent save = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                        save.addCategory(Intent.CATEGORY_OPENABLE);
+                        save.setType("text/plain");
+                        save.putExtra(Intent.EXTRA_TITLE, "srt".equals(kind) ? "helix-untertitel.srt" : "helix-skript.txt");
+                        startActivityForResult(save, 148);
+                    } else if ("studio".equals(target.getHost())) showStudio();
                 else if ("connect".equals(target.getHost())) {
                     String value = target.getQueryParameter("url");
                     if (value == null) return true;
@@ -243,7 +257,20 @@ public final class MainActivity extends Activity {
                     return true;
                 }
                 if ("helix".equals(target.getScheme())) {
-                    if ("studio".equals(target.getHost())) showStudio();
+                    if ("export-text".equals(target.getHost())) {
+                        String text = target.getQueryParameter("text");
+                        String kind = target.getQueryParameter("kind");
+                        if (text == null || text.length() > 100000 || pendingTextExport != null) {
+                            Toast.makeText(MainActivity.this, "Export nicht möglich: Text zu groß oder Export läuft bereits.", Toast.LENGTH_LONG).show();
+                            return true;
+                        }
+                        pendingTextExport = text;
+                        Intent save = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                        save.addCategory(Intent.CATEGORY_OPENABLE);
+                        save.setType("text/plain");
+                        save.putExtra(Intent.EXTRA_TITLE, "srt".equals(kind) ? "helix-untertitel.srt" : "helix-skript.txt");
+                        startActivityForResult(save, 148);
+                    } else if ("studio".equals(target.getHost())) showStudio();
                     else if ("settings".equals(target.getHost())) showSetup(null);
                     else if ("open-termux".equals(target.getHost())) {
                         try { Intent termux = new Intent(Intent.ACTION_VIEW, Uri.parse("termux://home")); termux.setPackage("com.termux"); startActivity(termux); }
@@ -423,6 +450,20 @@ public final class MainActivity extends Activity {
 
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 148) {
+            String text = pendingTextExport;
+            pendingTextExport = null;
+            if (resultCode == RESULT_OK && data != null && data.getData() != null && text != null) {
+                try (java.io.OutputStream out = getContentResolver().openOutputStream(data.getData())) {
+                    if (out == null) throw new java.io.IOException("Kein Dateizugriff");
+                    out.write(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    Toast.makeText(this, "Datei gespeichert.", Toast.LENGTH_LONG).show();
+                } catch (Exception error) {
+                    Toast.makeText(this, "Datei konnte nicht gespeichert werden.", Toast.LENGTH_LONG).show();
+                }
+            }
+            return;
+        }
         if (resultCode != RESULT_OK || data == null || data.getData() == null || web == null) return;
         Uri uri = data.getData();
         // Keep access to selected gallery media after the activity or app restarts.

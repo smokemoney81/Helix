@@ -1,0 +1,29 @@
+/* Shared artwork stays fitted to the viewport, including floor/ceiling reflections. */
+html { background: #000; }
+body { background: #000 !important; isolation: isolate; }
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg,rgba(0,0,0,.38),rgba(0,0,0,.56)),
+    url('helix-room.png') center / contain no-repeat;
+}
+.hx-guide button, .hx-assistant, .detail, .offline, .cloud, .gallery,
+.card, .hx-tool-panel, #hx-model-detail, #hx-local-model-tools,
+#hx-voice-slot > .offline-step {
+  background: rgba(3,10,16,.88);
+  border-color: rgba(115,190,212,.32);
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+.hx-guide button[data-hx="tools"] { background: rgba(3,16,21,.88); }
+.hx-head button, .hx-sidebar button, .hx-back, .hx-pages button,
+.icon-button, .version { background: rgba(5,14,21,.94); }
+.hx-sidebar { background: rgba(2,8,13,.98); }
+.hx-assistant .chat { background: transparent; }
+.prompt, input, select, .chat-log { background-color: rgba(0,5,10,.92); }
+.hx-guide button[aria-pressed="true"], .card[aria-pressed="true"] {
+  border-color: #b9f184;
+}
+button:focus-visible, a:focus-visible { outline: 2px solid #b9f184; outline-offset: 3px; }
