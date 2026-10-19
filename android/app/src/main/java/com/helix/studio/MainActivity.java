@@ -141,7 +141,27 @@ public final class MainActivity extends Activity {
                         save.setType("text/plain");
                         save.putExtra(Intent.EXTRA_TITLE, "srt".equals(kind) ? "helix-untertitel.srt" : "helix-skript.txt");
                         startActivityForResult(save, 148);
-                    } else if ("studio".equals(target.getHost())) showStudio();\n                    else if ("download-local-video-model".equals(target.getHost())) {\n                        String source = target.getQueryParameter("url");\n                        String name = target.getQueryParameter("name");\n                        Uri modelUri = source == null ? null : Uri.parse(source);\n                        if (modelUri == null || !"https".equals(modelUri.getScheme()) || !"huggingface.co".equalsIgnoreCase(modelUri.getHost())) {\n                            Toast.makeText(MainActivity.this, "Nur Hugging-Face-Modellquellen sind erlaubt.", Toast.LENGTH_LONG).show();\n                        } else {\n                            try {\n                                DownloadManager.Request download = new DownloadManager.Request(modelUri);\n                                download.setTitle("Helix: " + (name == null ? "Videomodell" : name));\n                                download.setDescription("Lokales Videomodell wird heruntergeladen");\n                                download.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);\n                                download.setDestinationInExternalFilesDir(MainActivity.this, Environment.DIRECTORY_DOWNLOADS, (name == null ? "helix-video-model" : name) + ".safetensors");\n                                ((DownloadManager) getSystemService(DOWNLOAD_SERVICE)).enqueue(download);\n                                Toast.makeText(MainActivity.this, "Download gestartet. Nach Abschluss liegt das Modell im Helix-Speicher.", Toast.LENGTH_LONG).show();\n                            } catch (Exception error) {\n                                Toast.makeText(MainActivity.this, "Modell-Download konnte nicht gestartet werden.", Toast.LENGTH_LONG).show();\n                            }\n                        }\n                    }
+                    } else if ("studio".equals(target.getHost())) showStudio();
+                    else if ("download-local-video-model".equals(target.getHost())) {
+                        String source = target.getQueryParameter("url");
+                        String name = target.getQueryParameter("name");
+                        Uri modelUri = source == null ? null : Uri.parse(source);
+                        if (modelUri == null || !"https".equals(modelUri.getScheme()) || !"huggingface.co".equalsIgnoreCase(modelUri.getHost())) {
+                            Toast.makeText(MainActivity.this, "Nur Hugging-Face-Modellquellen sind erlaubt.", Toast.LENGTH_LONG).show();
+                        } else {
+                            try {
+                                DownloadManager.Request download = new DownloadManager.Request(modelUri);
+                                download.setTitle("Helix: " + (name == null ? "Videomodell" : name));
+                                download.setDescription("Lokales Videomodell wird heruntergeladen");
+                                download.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                download.setDestinationInExternalFilesDir(MainActivity.this, Environment.DIRECTORY_DOWNLOADS, (name == null ? "helix-video-model" : name) + ".safetensors");
+                                ((DownloadManager) getSystemService(DOWNLOAD_SERVICE)).enqueue(download);
+                                Toast.makeText(MainActivity.this, "Download gestartet. Nach Abschluss liegt das Modell im Helix-Speicher.", Toast.LENGTH_LONG).show();
+                            } catch (Exception error) {
+                                Toast.makeText(MainActivity.this, "Modell-Download konnte nicht gestartet werden.", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
                 else if ("connect".equals(target.getHost())) {
                     String value = target.getQueryParameter("url");
                     if (value == null) return true;
